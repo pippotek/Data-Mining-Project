@@ -36,10 +36,10 @@ This project aims to create a robust, real-time system for aggregating news arti
 
 
 
-## Summary of Steps
-Preprocess each article’s text (tokenization, stop word removal, etc.).
-Combine fields into a single text for richer input.
-Vectorize using TF-IDF or Word2Vec (choose based on clustering needs).
-Store vectors in MongoDB for easy access and further processing.
-Cluster articles by topic using k-means or another clustering algorithm.
-Use cosine similarity to retrieve articles similar to a given one within the same or related topics.
+## Summary of TO DO's
+- Preprocess each article’s text (tokenization, stop word removal, etc.).
+- Combine fields into a single text for richer input.
+- Vectorize using TF-IDF or Word2Vec (choose based on clustering needs).
+- Store vectors in MongoDB for easy access and further processing.
+- Cluster articles by topic using k-means or another clustering algorithm.
+- Use cosine similarity to retrieve articles similar to a given one within the same or related topics.
