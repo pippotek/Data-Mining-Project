@@ -37,6 +37,7 @@ This project aims to create a robust, real-time system for aggregating news arti
 
 
 ## Summary of TO DO's
+- Store each article in MongoDB with metadata (each article in a separate document, documents organized in collections based on tipic or geographical region idk)
 - Preprocess each article’s text (tokenization, stop word removal, etc.).
 - Combine fields into a single text for richer input.
 - Vectorize using TF-IDF or Word2Vec (choose based on clustering needs).
