@@ -1,4 +1,4 @@
-# Project A: Real-Time News Feed Aggregator with Clustering by Ideology & Topic
+# Real-Time News Feed Aggregator with Clustering by Ideology & Topic
 
 ## Objective:
 The objective of this project is to create a real-time news aggregator that groups news articles by topic and ideology, providing users with an organized and ideologically diverse view of the news landscape. Using clustering and distance measures, the aggregator will offer categorized news feeds that reflect various perspectives, enabling more nuanced consumption of information.
