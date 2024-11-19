@@ -32,3 +32,15 @@ The project will collect real-time news articles from multiple sources using API
 
 ## Expected Outcomes:
 This project aims to create a robust, real-time system for aggregating news articles and clustering them by topic and ideology, helping users access a balanced and structured news feed. The system will allow users to identify trending topics and see news articles categorized by ideological perspectives, thus promoting a more comprehensive understanding of global news narratives.
+
+
+
+
+## Summary of TO DO's
+- Store each article in MongoDB with metadata (each article in a separate document, documents organized in collections based on tipic or geographical region idk)
+- Preprocess each article’s text (tokenization, stop word removal, etc.).
+- Combine fields into a single text for richer input.
+- Vectorize using TF-IDF or Word2Vec (choose based on clustering needs).
+- Store vectors in MongoDB for easy access and further processing.
+- Cluster articles by topic using k-means or another clustering algorithm.
+- Use cosine similarity to retrieve articles similar to a given one within the same or related topics.
