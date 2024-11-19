@@ -1,5 +1,6 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from pymongo.errors import BulkWriteError
 import json
 from setup import load_config
 
@@ -16,7 +17,7 @@ if config:
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
 
-with open('/home/filippo/Desktop/Uni/Data-Mining-Project/bitcoin_articles.json', 'r', encoding='utf-8') as file:
+with open('/home/filippo/Desktop/Uni/Data-Mining-Project/sample_articles.json', 'r', encoding='utf-8') as file:
     data = json.load(file)  # Load JSON data as a Python list
 
 # Filter the data to keep only the specified fields
@@ -33,11 +34,15 @@ filtered_data = [
 ]
 
 # Connect to MongoDB  # Use your MongoDB URI if it's different
-db = client['NEWS']  # Replace with your database name
+db = client['datamining']  # Replace with your database name
 
 # Insert data into the 'articles' collection
-articles_collection = db['articles']
-result = articles_collection.insert_many(filtered_data)  # Insert the list of articles
+articles_collection = db['newsarticles']
+try:
+    result = articles_collection.insert_many(filtered_data, ordered=False)
+    print(f"Inserted {len(result.inserted_ids)} documents successfully.")
+except BulkWriteError as bwe:
+    print(f"Error inserting documents: {bwe.details}")
 
 # Print out the inserted IDs to verify
 print("Inserted document IDs:", result.inserted_ids)
