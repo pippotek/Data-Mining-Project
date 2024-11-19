@@ -4,7 +4,7 @@ import time
 from setup import load_config
 
 # Load the configuration
-config = load_config("config.yaml")
+config = load_config("src/config.yaml")
 
 # Access specific values
 if config:
@@ -19,26 +19,12 @@ base_url = 'https://api.newscatcherapi.com/v2/search'
 # List of parameters to make multiple queries
 params = [
     {
-        'q': "Meloni",
-        'lang': "it",
+        'q': "Trump",
+        'lang': "en",
         'to_rank': 10000,
         'page_size': 100,
         'page': 1,
-    },
-    {
-        'q': "Meloni",
-        'lang': "it",
-        'to_rank': 10000,
-        'page_size': 100,
-        'page': 2,
-    },
-    {
-        'q': "Meloni",
-        'lang': "it",
-        'to_rank': 10000,
-        'page_size': 100,
-        'page': 3,
-    },
+    }
 ]
 
 # Variable to store all found news articles
@@ -81,7 +67,7 @@ for separated_param in params:
 print(f'Total number of extracted articles => {str(len(all_news_articles_mp))}')
 
 # Save the content of all extracted articles to a JSON file
-with open('ita_articles.json', 'w') as json_file:
+with open('trump_articles.json', 'w') as json_file:
     json.dump(all_news_articles_mp, json_file, indent=4)
 
 print("Data has been saved to bitcoin_articles.json")
