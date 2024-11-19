@@ -1,8 +1,9 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import json
-
 from setup import load_config
+
+### TRIAL SCRIPT TO LOAD DATA INTO MONGO
 
 # Load the configuration
 config = load_config("src/config.yaml")

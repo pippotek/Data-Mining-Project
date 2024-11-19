@@ -3,6 +3,8 @@ import json
 import time
 from setup import load_config
 
+####### TRIAL SCRIPT TO FETCH THE DATA
+
 # Load the configuration
 config = load_config("src/config.yaml")
 

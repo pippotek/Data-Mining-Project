@@ -1,5 +1,7 @@
 import yaml
 
+### UTILITY SCRIPT TO LOAD SENSITIVE DATA
+
 def load_config(file_path):
     """
     Loads a YAML configuration file and returns the contents as a dictionary.
