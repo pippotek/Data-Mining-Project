@@ -41,9 +41,9 @@ def fetch_articles(api_key, intervals, topics, max_articles_per_source_per_inter
             # Initialize counts and exclusions for this interval
             source_counts = defaultdict(int)
             excluded_sources = set(['blogspot.com','yahoo.com', 'amazonaws.com'])  # Initial exclusions
-            page = 1
+            page = 6
 
-            while page <= 5:
+            while page <= 10:
                 # Update not_sources parameter
                 not_sources_param = ','.join(excluded_sources)
                 # Prepare parameters
@@ -110,7 +110,7 @@ def fetch_articles(api_key, intervals, topics, max_articles_per_source_per_inter
 
     return all_articles
 
-def save_articles_to_json(articles, filename='sample_articles1.json'):
+def save_articles_to_json(articles, filename='sample_articles2.json'):
     """Save articles to a JSON file."""
     with open(filename, 'w') as json_file:
         json.dump(articles, json_file, indent=4)
