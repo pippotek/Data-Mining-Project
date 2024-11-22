@@ -91,16 +91,16 @@ processed_df = nlp_model.transform(df)
 # --- Result Selection ---
 # Select only '_id' and 'embedding' for the update
 result_df = processed_df.select("_id", "embedding")
+result_df.show()
 
 
-
-# --- Writing Results Back to MongoDB with Partial Updates ---
-result_df.write \
-    .format("mongodb") \
-    .option("database", "datamining") \
-    .option("collection", "news_embeddings") \
-    .mode("append") \
-    .save()
+# # --- Writing Results Back to MongoDB with Partial Updates ---
+# result_df.write \
+#     .format("mongodb") \
+#     .option("database", "datamining") \
+#     .option("collection", "news_embeddings") \
+#     .mode("append") \
+#     .save()
 
 # --- Graceful Shutdown ---
 spark.stop()
