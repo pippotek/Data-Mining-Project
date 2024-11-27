@@ -36,11 +36,7 @@ filtered_data = [
     {
         "_id": article["_id"],  # Renaming `id` to `_id` to use as MongoDB's primary key if it exists
         "title": article.get("title"),
-        "author": article.get("author"),
-        "link": article.get("link"),
-        "summary": article.get("summary"),
-        "excerpt": article.get("excerpt"),
-        "published_date" : article.get("published_date")
+        "content": article.get("summary") if len(article.get("summary")) > len(article.get("excerpt")) else article.get("excerpt")
     }
     for article in data
 ]

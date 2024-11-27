@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from setup import load_config
 
+
+### FETCHING SCRIPT, TO PERFECT
+
 def load_api_key(config_path="src/config.yaml"):
     """Load API key from configuration file."""
     config = load_config(config_path)
@@ -41,9 +44,9 @@ def fetch_articles(api_key, intervals, topics, max_articles_per_source_per_inter
             # Initialize counts and exclusions for this interval
             source_counts = defaultdict(int)
             excluded_sources = set(['blogspot.com','yahoo.com', 'amazonaws.com'])  # Initial exclusions
-            page = 6
+            page = 11
 
-            while page <= 10:
+            while page <= 15:
                 # Update not_sources parameter
                 not_sources_param = ','.join(excluded_sources)
                 # Prepare parameters
@@ -110,7 +113,7 @@ def fetch_articles(api_key, intervals, topics, max_articles_per_source_per_inter
 
     return all_articles
 
-def save_articles_to_json(articles, filename='sample_articles2.json'):
+def save_articles_to_json(articles, filename='sample_articles3.json'):
     """Save articles to a JSON file."""
     with open(filename, 'w') as json_file:
         json.dump(articles, json_file, indent=4)
