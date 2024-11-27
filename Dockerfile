@@ -39,7 +39,8 @@ ENV SPARK_HOME=/opt/spark \
 
 # Copy your Python application and configuration
 WORKDIR /app
-COPY src/TESTS /app/src/
+COPY src/utilities/clean_embed.py /app/src/clean_embed.py
+COPY src/utilities/setup.py /app/src/setup.py
 COPY src/config.yaml /app/src/config.yaml
 
 # Set entrypoint for running the Python application
