@@ -1,4 +1,0 @@
-pyspark==3.3.1
-spark-nlp==5.5.1
-PYaml
-numpy

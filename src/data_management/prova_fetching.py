@@ -3,14 +3,14 @@ import json
 import time
 from datetime import datetime, timedelta
 from collections import defaultdict
-from setup import load_config
+from utilities import setup
 
 
 ### FETCHING SCRIPT, TO PERFECT
 
 def load_api_key(config_path="src/config.yaml"):
     """Load API key from configuration file."""
-    config = load_config(config_path)
+    config = setup.load_config(config_path)
     if config:
         return config.get('api_key', None)
     return None

@@ -2,5 +2,5 @@ config.yaml
 *.json
 *.tsv
 __pycache__/
-Wallet_MKRV4DQ7ATKTABW8/
 test.py
+*.jar
