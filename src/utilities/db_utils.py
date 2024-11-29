@@ -1,6 +1,7 @@
 from pyspark.sql.dataframe import DataFrame
-from typing import Dict
+from typing import Dict, List
 import os
+import oracledb
 import urllib.request
 
 
@@ -76,3 +77,65 @@ def write_to_db(df: DataFrame, config: Dict[str, str], table_name: str, mode: st
         .option("driver", "oracle.jdbc.OracleDriver") \
         .mode(mode) \
         .save()
+    
+def read_from_db_plain(config: Dict[str, str], query: str) -> List[tuple]:
+    """
+    Reads data from an Oracle database into a Python list of tuples.
+
+    Args:
+        config (Dict[str, str]): Database configuration dictionary with keys `db_user`, `db_password`, and `db_dsn`.
+        query (str): SQL query to execute.
+
+    Returns:
+        List[tuple]: List of tuples containing the query result.
+    """
+    connection = None
+    try:
+        # Establish connection to the Oracle database
+        connection = oracledb.connect(
+            user=config["db_user"],
+            password=config["db_password"],
+            dsn=config["db_dsn"]
+        )
+        cursor = connection.cursor()
+        cursor.execute(query)
+        # Fetch all results as a list of tuples
+        result = cursor.fetchall()
+        return result
+    finally:
+        if connection:
+            connection.close()
+
+def write_to_db_plain(data: List[tuple], config: Dict[str, str], table_name: str, columns: List[str]):
+    """
+    Writes data to an Oracle database table.
+
+    Args:
+        data (List[tuple]): List of tuples containing data to write to the database.
+        config (Dict[str, str]): Database configuration dictionary with keys `db_user`, `db_password`, and `db_dsn`.
+        table_name (str): Name of the target table in the database.
+        columns (List[str]): List of column names for the target table.
+
+    Returns:
+        None
+    """
+    connection = None
+    try:
+        # Establish connection to the Oracle database
+        connection = oracledb.connect(
+            user=config["db_user"],
+            password=config["db_password"],
+            dsn=config["db_dsn"]
+        )
+        cursor = connection.cursor()
+        
+        # Prepare the SQL INSERT statement
+        placeholders = ', '.join([':' + str(i + 1) for i in range(len(columns))])
+        sql = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
+        
+        # Execute the insert for each row in data
+        cursor.executemany(sql, data)
+        connection.commit()
+    finally:
+        if connection:
+            connection.close()
