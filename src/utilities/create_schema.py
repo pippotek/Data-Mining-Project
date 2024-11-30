@@ -1,11 +1,6 @@
 import oracledb
 
 def create_schema():
-    # Database connection details
-    db_dsn = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-milan-1.oraclecloud.com))(connect_data=(service_name=g126d38945ee7b1_w1d1rk5b8lafcoir_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"  # TNS entry or DSN (e.g., "example_high")
-    db_user = "ADMIN"        # Oracle DB user
-    db_password = "sLg95NBJc-*:v,A"    # Oracle DB password
-
     # SQL statements to drop tables if they exist
     drop_interactions_table = "DROP TABLE interactions_val CASCADE CONSTRAINTS"
     drop_news_table = "DROP TABLE news_val CASCADE CONSTRAINTS"
