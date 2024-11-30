@@ -1,0 +1,5 @@
+oracledb
+pyspark
+sparknlp
+requests
+PyYAML
