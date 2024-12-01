@@ -16,11 +16,10 @@ if __name__ == "__main__":
         .appName("UtilityMatrixGeneration") \
         .master("local[*]") \
         .config("spark.driver.memory", "2G") \
-        .config("spark.jars", "C:/Spark/jars/ojdbc17.jar") \
-        .config("spark.local.dir", "C:\SparkTemp") \
+        .config("spark.jars", "/mnt/c/Spark/jars/ojdbc17.jar") \
+        .config("spark.local.dir", "/mnt/c/SparkTemp") \
         .config("spark.ui.port", "0") \
         .getOrCreate()
-
 
     # Run the utility matrix function
     preprocess_behaviors(config, spark)
