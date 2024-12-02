@@ -19,6 +19,7 @@ if __name__ == "__main__":
         .config("spark.jars", "/mnt/c/Spark/jars/ojdbc17.jar") \
         .config("spark.local.dir", "/mnt/c/SparkTemp") \
         .config("spark.ui.port", "0") \
+        .config("spark.sql.pivotMaxValues", 55000) \
         .getOrCreate()
 
     # Run the utility matrix function

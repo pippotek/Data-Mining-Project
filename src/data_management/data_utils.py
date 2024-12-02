@@ -18,7 +18,7 @@ def preprocess_behaviors(config, spark):
 
     # Load interactions table from OracleDB
     logging.info("Loading interactions table from OracleDB...")
-    interactions_query = "SELECT userid, displayed FROM interactions"
+    interactions_query = "SELECT userid, displayed FROM interactions_test"
     interactions_df = read_from_db(spark, config, interactions_query)
     logging.info("Interactions table loaded successfully.")
 
