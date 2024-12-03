@@ -1,9 +1,0 @@
-2024-12-03 15:05:19,750 - ALS_Run_Train - INFO - Starting data loading...
-2024-12-03 15:05:19,751 - ALS_Training - INFO - Downloading and extracting MIND dataset...
-Problem downloading https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-Problem downloading https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-Problem downloading https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-Problem downloading https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-Problem downloading https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-2024-12-03 15:05:38,812 - ALS_Run_Train - ERROR - An error occurred during training: 409 Client Error: Public access is not permitted on this storage account. for url: https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip
-2024-12-03 15:05:39,143 - ALS_Run_Train - INFO - Spark session stopped.

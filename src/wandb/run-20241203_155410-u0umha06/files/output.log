@@ -1,3 +1,0 @@
-2024-12-03 15:54:15,278 - ALS_Run_Train - INFO - Starting data loading...
-2024-12-03 15:54:15,280 - ALS_Run_Train - ERROR - An error occurred during training: load_and_prepare_mind_dataset() got an unexpected keyword argument 'size'
-2024-12-03 15:54:15,543 - ALS_Run_Train - INFO - Spark session stopped.
