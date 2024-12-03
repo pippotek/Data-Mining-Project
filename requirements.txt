@@ -3,3 +3,9 @@ pyspark
 sparknlp
 requests
 PyYAML
+recommenders
+matplotlib
+seaborn
+pandera==0.19.3
+numpy<2.0
+wandb

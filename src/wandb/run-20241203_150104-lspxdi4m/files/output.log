@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/scripts/run_train_als.py", line 3, in <module>
+    from training.train_als import train_als_model, load_training_data
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/training/train_als.py", line 7, in <module>
+    from training.evaluation import evaluate_model
+ImportError: cannot import name 'evaluate_model' from 'training.evaluation' (/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/training/evaluation.py)
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/scripts/run_train_als.py", line 3, in <module>
+    from training.train_als import train_als_model, load_training_data
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/training/train_als.py", line 7, in <module>
+    from training.evaluation import evaluate_model
+ImportError: cannot import name 'evaluate_model' from 'training.evaluation' (/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/training/evaluation.py)

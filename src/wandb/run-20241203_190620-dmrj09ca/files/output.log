@@ -1,0 +1,7 @@
+2024-12-03 19:06:26,203 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-03 19:06:26,203 - DataUtils - INFO - Downloading and extracting the demo MIND dataset to ./data/mind...
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 17.0k/17.0k [00:24<00:00, 686KB/s]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 9.84k/9.84k [00:12<00:00, 777KB/s]
+2024-12-03 19:07:05,215 - DataUtils - ERROR - An error occurred while downloading or extracting the MIND dataset: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-03 19:07:05,215 - ALS_Run_Train - ERROR - An error occurred during training: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-03 19:07:05,537 - ALS_Run_Train - INFO - Spark session stopped.

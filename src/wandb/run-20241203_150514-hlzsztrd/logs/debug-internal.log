@@ -1,0 +1,18 @@
+{"time":"2024-12-03T15:05:14.417735533+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-03T15:05:14.418003974+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/wandb/run-20241203_150514-hlzsztrd/logs/debug-core.log"}
+{"time":"2024-12-03T15:05:15.527651243+01:00","level":"INFO","msg":"created new stream","id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:15.527720721+01:00","level":"INFO","msg":"stream: started","id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:15.528129524+01:00","level":"INFO","msg":"handler: started","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:15.528252136+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:15.528287487+01:00","level":"INFO","msg":"sender: started","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:16.060608725+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-03T15:05:39.145295915+01:00","level":"INFO","msg":"stream: closing","id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:39.145331887+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-03T15:05:39.146732739+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-03T15:05:39.478374714+01:00","level":"WARN","msg":"No program path found, not creating job artifact. See https://docs.wandb.ai/guides/launch/create-job"}
+{"time":"2024-12-03T15:05:39.478386209+01:00","level":"INFO","msg":"sender: sendDefer: no job artifact to save"}
+{"time":"2024-12-03T15:05:40.072307011+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-12-03T15:05:40.389935318+01:00","level":"INFO","msg":"handler: closed","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:40.390009748+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:40.390031775+01:00","level":"INFO","msg":"sender: closed","stream_id":"hlzsztrd"}
+{"time":"2024-12-03T15:05:40.390212338+01:00","level":"INFO","msg":"stream: closed","id":"hlzsztrd"}

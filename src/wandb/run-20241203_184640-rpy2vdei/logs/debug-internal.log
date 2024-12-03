@@ -1,0 +1,18 @@
+{"time":"2024-12-03T18:46:40.152296725+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-03T18:46:40.152360374+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/wandb/run-20241203_184640-rpy2vdei/logs/debug-core.log"}
+{"time":"2024-12-03T18:46:41.122863977+01:00","level":"INFO","msg":"created new stream","id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:41.122938439+01:00","level":"INFO","msg":"stream: started","id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:41.122961069+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:41.123024872+01:00","level":"INFO","msg":"handler: started","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:41.123186742+01:00","level":"INFO","msg":"sender: started","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:41.544167126+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-03T18:46:51.151540933+01:00","level":"INFO","msg":"stream: closing","id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:51.151740029+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-03T18:46:51.153226872+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-03T18:46:51.333555192+01:00","level":"WARN","msg":"No program path found, not creating job artifact. See https://docs.wandb.ai/guides/launch/create-job"}
+{"time":"2024-12-03T18:46:51.333570348+01:00","level":"INFO","msg":"sender: sendDefer: no job artifact to save"}
+{"time":"2024-12-03T18:46:52.048567718+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-12-03T18:46:52.276935721+01:00","level":"INFO","msg":"handler: closed","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:52.276955997+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:52.276972019+01:00","level":"INFO","msg":"sender: closed","stream_id":"rpy2vdei"}
+{"time":"2024-12-03T18:46:52.277036834+01:00","level":"INFO","msg":"stream: closed","id":"rpy2vdei"}
