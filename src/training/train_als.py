@@ -4,6 +4,7 @@ from configs.als_configs import ALS_CONFIG
 from training.evaluation import evaluate_model
 from data_management.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
 from utilities.logger import get_logger
+from training.evaluation_metrics import compute_regression_metrics
 #from recommenders.datasets.mind import download_mind, extract_mind
 
 
@@ -15,15 +16,18 @@ def load_training_data(spark,
                        **kwargs):
     if data_source == "recommenders":
         
-        train_path = "./data/mind/train/behaviors.tsv"
-        valid_path = "./data/mind/valid/behaviors.tsv"
+        logger.info("Loading and preprocessing MIND dataset...")
         
-        logger.info("Preprocessing MIND dataset...")        
+        train_path, valid_path = load_and_prepare_mind_dataset(
+            size="demo", 
+            dest_path="./data/mind"
+        )
         
         training_data, validation_data = preprocess_behaviors_mind(
             spark=spark,
             train_path=train_path,
-            valid_path=valid_path
+            valid_path=valid_path,
+            npratio=4  # Adjust this ratio based on class imbalance requirements
         )
         logger.info("MIND dataset preprocessed successfully.")
         
@@ -62,7 +66,9 @@ def train_als_model(training_data, validation_data, model_save_path):
     predictions = make_predictions(model, validation_data)
 
     logger.info("Evaluating the ALS model...")
-    rmse = evaluate_model(predictions, metric="rmse")
+    regression_metrics = compute_regression_metrics(predictions)
+    rmse = regression_metrics["RMSE"]
+    mae = regression_metrics["MAE"]
     logger.info(f"Validation RMSE: {rmse}")
 
     wandb.log({

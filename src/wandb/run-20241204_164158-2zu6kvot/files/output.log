@@ -1,0 +1,91 @@
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/scripts/run_train_als.py", line 16, in <module>
+    .getOrCreate()
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/sql/session.py", line 497, in getOrCreate
+    sc = SparkContext.getOrCreate(sparkConf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 515, in getOrCreate
+    SparkContext(conf=conf or SparkConf())
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 203, in __init__
+    self._do_init(
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 296, in _do_init
+    self._jsc = jsc or self._initialize_context(self._conf._jconf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 421, in _initialize_context
+    return self._jvm.JavaSparkContext(jconf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/py4j/java_gateway.py", line 1587, in __call__
+    return_value = get_return_value(
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/py4j/protocol.py", line 326, in get_return_value
+    raise Py4JJavaError(
+py4j.protocol.Py4JJavaError: An error occurred while calling None.org.apache.spark.api.java.JavaSparkContext.
+: java.io.FileNotFoundException: File file:/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/\\wsl.localhost\Ubuntu\tmp\spark-events does not exist
+	at org.apache.hadoop.fs.RawLocalFileSystem.deprecatedGetFileStatus(RawLocalFileSystem.java:779)
+	at org.apache.hadoop.fs.RawLocalFileSystem.getFileLinkStatusInternal(RawLocalFileSystem.java:1100)
+	at org.apache.hadoop.fs.RawLocalFileSystem.getFileStatus(RawLocalFileSystem.java:769)
+	at org.apache.hadoop.fs.FilterFileSystem.getFileStatus(FilterFileSystem.java:462)
+	at org.apache.spark.deploy.history.EventLogFileWriter.requireLogBaseDirAsDirectory(EventLogFileWriters.scala:77)
+	at org.apache.spark.deploy.history.SingleEventLogFileWriter.start(EventLogFileWriters.scala:221)
+	at org.apache.spark.scheduler.EventLoggingListener.start(EventLoggingListener.scala:81)
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:632)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:238)
+	at py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+	at py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/scripts/run_train_als.py", line 16, in <module>
+    .getOrCreate()
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/sql/session.py", line 497, in getOrCreate
+    sc = SparkContext.getOrCreate(sparkConf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 515, in getOrCreate
+    SparkContext(conf=conf or SparkConf())
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 203, in __init__
+    self._do_init(
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 296, in _do_init
+    self._jsc = jsc or self._initialize_context(self._conf._jconf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/pyspark/context.py", line 421, in _initialize_context
+    return self._jvm.JavaSparkContext(jconf)
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/py4j/java_gateway.py", line 1587, in __call__
+    return_value = get_return_value(
+  File "/home/joaquin_l_calvo/.virtualenvs/data_mining/lib/python3.10/site-packages/py4j/protocol.py", line 326, in get_return_value
+    raise Py4JJavaError(
+py4j.protocol.Py4JJavaError: An error occurred while calling None.org.apache.spark.api.java.JavaSparkContext.
+: java.io.FileNotFoundException: File file:/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/\\wsl.localhost\Ubuntu\tmp\spark-events does not exist
+	at org.apache.hadoop.fs.RawLocalFileSystem.deprecatedGetFileStatus(RawLocalFileSystem.java:779)
+	at org.apache.hadoop.fs.RawLocalFileSystem.getFileLinkStatusInternal(RawLocalFileSystem.java:1100)
+	at org.apache.hadoop.fs.RawLocalFileSystem.getFileStatus(RawLocalFileSystem.java:769)
+	at org.apache.hadoop.fs.FilterFileSystem.getFileStatus(FilterFileSystem.java:462)
+	at org.apache.spark.deploy.history.EventLogFileWriter.requireLogBaseDirAsDirectory(EventLogFileWriters.scala:77)
+	at org.apache.spark.deploy.history.SingleEventLogFileWriter.start(EventLogFileWriters.scala:221)
+	at org.apache.spark.scheduler.EventLoggingListener.start(EventLoggingListener.scala:81)
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:632)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:238)
+	at py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+	at py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+	at java.base/java.lang.Thread.run(Thread.java:840)

@@ -1,0 +1,17 @@
+2024-12-04 16:52:40,742 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-04 16:52:40,743 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:52:40,743 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:52:40,743 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:52:46,085 - DataUtils - INFO - Schema of train_df:
+root
+ |-- userId: integer (nullable = true)
+ |-- newsId: integer (nullable = true)
+ |-- clicked: integer (nullable = false)
+2024-12-04 16:52:46,090 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:52:46,091 - ALS_Run_Train - INFO - Starting ALS training with data source: recommenders
+2024-12-04 16:52:46,113 - ALS_Training - INFO - Starting ALS model training...
+2024-12-04 16:53:04,711 - ALS_Training - INFO - ALS model training completed.
+2024-12-04 16:53:04,712 - ALS_Training - INFO - Generating predictions for validation data...
+2024-12-04 16:53:04,837 - ALS_Training - INFO - Evaluating the ALS model...
+2024-12-04 16:53:04,929 - ALS_Run_Train - ERROR - An error occurred during training: rating does not exist. Available: userId, newsId, clicked, prediction
+2024-12-04 16:53:05,118 - ALS_Run_Train - INFO - Spark session stopped.

@@ -6,10 +6,23 @@ from data_management.data_utils import load_and_prepare_mind_dataset, preprocess
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 
+# NOTE: I'VE ADDED A LOT OF SHIT HERE DURING DEBUGGING. WE SHOULD CHECK THIS IN FINAL VERSION.
 if __name__ == "__main__":
     spark = SparkSession.builder \
         .appName("ALS_Training") \
-        .getOrCreate()
+        .config("spark.executor.memory", "10g") \
+        .config("spark.driver.memory", "10g") \
+        .config("spark.executor.cores", "6") \
+        .config("spark.driver.cores", "6") \
+        .config("spark.sql.shuffle.partitions", "16") \
+        .config("spark.default.parallelism", "16") \
+        .config("spark.sql.execution.arrow.pyspark.enabled", "true") \
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
+        .config("spark.kryoserializer.buffer", "64m") \
+        .config("spark.kryoserializer.buffer.max", "512m") \
+        .config("spark.driver.maxResultSize", "4g") \
+        .config("spark.sql.autoBroadcastJoinThreshold", "-1") \
+        .getOrCreate()       
 
     # Define the data source
     data_source = "recommenders"  # Change to "db" or "csv" to switch data sources
@@ -21,6 +34,7 @@ if __name__ == "__main__":
             # Prepare MIND dataset
             train_path, valid_path = load_and_prepare_mind_dataset(size="demo", dest_path="./data/mind")
             training_data, validation_data = preprocess_behaviors_mind(spark, train_path, valid_path, npratio=4)
+            #training_data = training_data.limit(1000) #just for debugging purposes, shouldn't be included in final version
         else:
             logger.error(f"Unsupported data source: {data_source}")
             raise ValueError(f"Unsupported data source: {data_source}")

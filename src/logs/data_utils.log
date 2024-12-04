@@ -1,0 +1,96 @@
+2024-12-04 12:38:47,382 - DataUtils - INFO - Downloading and extracting the demo MIND dataset to ./data/mind...
+2024-12-04 12:39:32,915 - DataUtils - ERROR - An error occurred while downloading or extracting the MIND dataset: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 13:15:46,852 - DataUtils - INFO - Downloading and extracting the demo MIND dataset to ./data/mind...
+2024-12-04 13:16:21,723 - DataUtils - ERROR - An error occurred while downloading or extracting the MIND dataset: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 13:17:36,716 - DataUtils - INFO - Downloading and extracting the demo MIND dataset to ./data/mind...
+2024-12-04 13:18:13,226 - DataUtils - ERROR - An error occurred while downloading or extracting the MIND dataset: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 13:35:17,271 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 13:35:17,271 - DataUtils - INFO - Dataset not found. Downloading and extracting demo MIND dataset to ./data/mind...
+2024-12-04 13:36:08,162 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv
+2024-12-04 14:21:59,854 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 14:21:59,854 - DataUtils - INFO - Dataset not found. Downloading and extracting demo MIND dataset to ./data/mind...
+2024-12-04 14:22:39,509 - DataUtils - INFO - Downloaded dataset zips: /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_train.zip, /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_dev.zip
+2024-12-04 14:22:39,914 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv
+2024-12-04 14:38:09,846 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 14:38:09,846 - DataUtils - INFO - Dataset not found. Downloading and extracting demo MIND dataset to ./data/mind...
+2024-12-04 14:38:09,846 - DataUtils - INFO - Downloaded dataset zips: /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_train.zip, /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_dev.zip
+2024-12-04 14:38:09,846 - DataUtils - INFO - Extracting dataset...
+2024-12-04 14:38:10,349 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv, or ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 14:44:09,572 - DataUtils - INFO - Dataset not found. Downloading and extracting demo MIND dataset to ./data/mind...
+2024-12-04 14:44:09,573 - DataUtils - INFO - Downloaded dataset zips: /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_train.zip, /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_dev.zip
+2024-12-04 14:47:53,908 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Expected files not found: Train: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 14:52:17,774 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Expected files not found: Train: ./src/MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./src/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:05:09,993 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Expected files not found: Train: ./src/MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./src/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:13:36,778 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:13:36,779 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:13:43,386 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 15:21:07,294 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 15:21:07,295 - DataUtils - INFO - Dataset not found. Downloading and extracting demo MIND dataset to ./data/mind...
+2024-12-04 15:21:07,295 - DataUtils - INFO - Downloaded dataset zips: /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_train.zip, /home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/MINDdemo_dev.zip
+2024-12-04 15:21:07,296 - DataUtils - INFO - Extracting dataset...
+2024-12-04 15:21:08,000 - DataUtils - ERROR - An error occurred while preparing the MIND dataset: Extracted files not found in expected paths: Train: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:21:55,609 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 15:21:55,610 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:21:55,610 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:22:01,705 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 15:24:10,216 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 15:24:10,217 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:24:10,217 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:24:16,033 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 15:36:29,867 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 15:36:29,867 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:36:29,868 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:36:37,268 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 15:51:40,901 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./data/mind/train/behaviors.tsv, Valid: ./data/mind/valid/behaviors.tsv
+2024-12-04 15:51:41,911 - DataUtils - ERROR - An error occurred while running data_utils.py: [PATH_NOT_FOUND] Path does not exist: file:/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/src/data/mind/train/behaviors.tsv.
+2024-12-04 15:52:31,732 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 15:52:35,502 - DataUtils - INFO - Schema of train_df:
+2024-12-04 15:52:35,504 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:25:18,567 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:25:18,568 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:25:18,568 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:25:53,789 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:25:53,789 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:25:53,789 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:25:57,263 - DataUtils - INFO - Schema of train_df:
+2024-12-04 16:25:57,266 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:43:27,227 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:43:27,228 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:43:27,228 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:43:33,550 - DataUtils - INFO - Schema of train_df:
+2024-12-04 16:43:33,555 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:52:40,743 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:52:40,743 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:52:40,743 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:52:46,085 - DataUtils - INFO - Schema of train_df:
+2024-12-04 16:52:46,090 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:55:13,270 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:55:13,270 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:55:13,271 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:55:18,907 - DataUtils - INFO - Schema of train_df:
+2024-12-04 16:55:18,914 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:58:10,197 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:58:10,198 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:58:10,198 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:58:16,382 - DataUtils - INFO - Schema of train_df:
+2024-12-04 16:58:16,388 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 17:01:25,572 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 17:01:25,572 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:01:25,572 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:01:33,713 - DataUtils - INFO - Schema of train_df:
+2024-12-04 17:01:33,721 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 17:03:18,698 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 17:03:18,698 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:03:18,698 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:03:24,114 - DataUtils - INFO - Schema of train_df:
+2024-12-04 17:03:24,119 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 17:20:37,160 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 17:20:37,161 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:20:37,161 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:20:43,935 - DataUtils - INFO - Schema of train_df:
+2024-12-04 17:20:43,939 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 17:37:24,550 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 17:37:24,551 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:37:24,551 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 17:37:29,676 - DataUtils - INFO - Schema of train_df:
+2024-12-04 17:37:29,678 - DataUtils - INFO - Preprocessing of MIND dataset completed.

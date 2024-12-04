@@ -14,6 +14,17 @@ def compute_ranking_metrics(predictions, k=10):
         .agg(F.collect_list(F.struct("prediction", "itemId")).alias("predictions")) \
         .select("userId", "predictions")
 
+    # DEBUGGING STEPS, TO BE DELETED IN FINAL VERSION
+    #print("Schema of prediction_and_labels:")
+    #prediction_and_labels.printSchema()
+
+    #print("Sample data from prediction_and_labels:")
+    #prediction_and_labels.show(10, truncate=False)
+
+    #print("Rows with null or empty predictions:")
+    #prediction_and_labels.filter(F.col("predictions").isNull() | (F.size(F.col("predictions")) == 0)).show(10, truncate=False)
+    # END OF DEBUGGING STEPS
+
     # Instantiate SparkRankingEvaluation
     ranking_eval = SparkRankingEvaluation(prediction_and_labels, k=k)
 
@@ -33,8 +44,8 @@ def compute_ranking_metrics(predictions, k=10):
 # Compute regression-based metrics for the ALS model.
 def compute_regression_metrics(predictions):
     # Initialize evaluators
-    rmse_evaluator = RegressionEvaluator(metricName="rmse", labelCol="rating", predictionCol="prediction")
-    mae_evaluator = RegressionEvaluator(metricName="mae", labelCol="rating", predictionCol="prediction")
+    rmse_evaluator = RegressionEvaluator(metricName="rmse", labelCol="clicked", predictionCol="prediction")
+    mae_evaluator = RegressionEvaluator(metricName="mae", labelCol="clicked", predictionCol="prediction")
 
     rmse = rmse_evaluator.evaluate(predictions)
     mae = mae_evaluator.evaluate(predictions)

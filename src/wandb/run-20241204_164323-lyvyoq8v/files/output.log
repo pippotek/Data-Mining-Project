@@ -1,0 +1,17 @@
+2024-12-04 16:43:27,226 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-04 16:43:27,227 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-04 16:43:27,228 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:43:27,228 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-04 16:43:33,550 - DataUtils - INFO - Schema of train_df:
+root
+ |-- userId: integer (nullable = true)
+ |-- newsId: integer (nullable = true)
+ |-- clicked: integer (nullable = false)
+2024-12-04 16:43:33,555 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-04 16:43:33,555 - ALS_Run_Train - INFO - Starting ALS training with data source: recommenders
+2024-12-04 16:43:33,572 - ALS_Training - INFO - Starting ALS model training...
+2024-12-04 16:43:55,797 - ALS_Training - INFO - ALS model training completed.
+2024-12-04 16:43:55,799 - ALS_Training - INFO - Generating predictions for validation data...
+2024-12-04 16:43:55,936 - ALS_Training - INFO - Evaluating the ALS model...
+2024-12-04 16:43:55,937 - ALS_Run_Train - ERROR - An error occurred during training: evaluate_model() got an unexpected keyword argument 'metric'
+2024-12-04 16:43:56,455 - ALS_Run_Train - INFO - Spark session stopped.
