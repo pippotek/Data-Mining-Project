@@ -1,1 +1,0 @@
-/home/joaquin_l_calvo/.virtualenvs/data_mining/bin/python: Error while finding module specification for 'training.evaluation.py' (ModuleNotFoundError: __path__ attribute not found on 'training.evaluation' while trying to find 'training.evaluation.py'). Try using 'training.evaluation' instead of 'training.evaluation.py' as the module name.
