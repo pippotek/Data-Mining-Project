@@ -45,6 +45,7 @@ ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
 # Copy requirements early to leverage Docker cache
 COPY requirements_als.txt /tmp/requirements_als.txt
 
+RUN pip install numpy scipy Cython
 # Install Python dependencies
 RUN pip install --no-cache-dir -r /tmp/requirements_als.txt
 
