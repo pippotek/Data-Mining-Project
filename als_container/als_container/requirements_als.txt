@@ -1,9 +1,0 @@
-recommenders
-matplotlib
-seaborn
-pandera==0.19.3
-numpy<2.0
-wandb
-pyspark==3.3.2
-py4j==0.10.9.5
-sparknlp
