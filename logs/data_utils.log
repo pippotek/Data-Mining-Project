@@ -25,3 +25,11 @@
 2024-12-11 10:47:52,136 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
 2024-12-11 10:47:52,137 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
 2024-12-11 10:47:57,571 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-11 12:58:11,039 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-11 12:58:11,040 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 12:58:11,040 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 12:58:15,752 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-11 13:03:47,615 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-11 13:03:47,615 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 13:03:47,615 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 13:03:50,902 - DataUtils - INFO - Preprocessing of MIND dataset completed.

@@ -1,0 +1,57 @@
+2024-12-11 13:03:47,614 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-11 13:03:47,615 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-11 13:03:47,615 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 13:03:47,615 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-11 13:03:50,902 - DataUtils - INFO - Preprocessing of MIND dataset completed.
+2024-12-11 13:03:50,903 - ALS_Run_Train - INFO - Starting ALS training with data source: recommenders
+2024-12-11 13:03:50,917 - ALS_Training - INFO - Starting ALS model training...
+2024-12-11 13:04:01,078 - ALS_Training - INFO - Training ALS model - Iteration 1/5
+2024-12-11 13:04:10,984 - ALS_Training - INFO - Training ALS model - Iteration 2/5
+2024-12-11 13:04:17,288 - ALS_Training - INFO - Training ALS model - Iteration 3/5
+2024-12-11 13:04:23,533 - ALS_Training - INFO - Training ALS model - Iteration 4/5
+2024-12-11 13:04:29,609 - ALS_Training - INFO - Training ALS model - Iteration 5/5
+2024-12-11 13:04:32,668 - ALS_Run_Train - ERROR - An error occurred during training: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `itemId` cannot be resolved. Did you mean one of the following? [`newsId`, `userId`, `clicked`, `prediction`].;
+'Aggregate [userId#170], [userId#170, collect_list(struct(prediction, prediction#747, itemId, 'itemId), 0, 0) AS predictions#789]
++- Filter atleastnnonnulls(1, prediction#747)
+   +- Project [userId#170, newsId#174, clicked#150, UDF(features#644, features#656) AS prediction#747]
+      +- Join LeftOuter, (CASE WHEN isnull(newsId#174) THEN cast(raise_error(newsId Ids MUST NOT be Null, NullType) as int) ELSE newsId#174 END = id#655)
+         :- Join LeftOuter, (CASE WHEN isnull(userId#170) THEN cast(raise_error(userId Ids MUST NOT be Null, NullType) as int) ELSE userId#170 END = id#643)
+         :  :- Union false, false
+         :  :  :- Filter (clicked#150 = 1)
+         :  :  :  +- Filter atleastnnonnulls(3, userId#170, newsId#174, clicked#150)
+         :  :  :     +- Project [userId#170, cast(regexp_replace(newsId#158, ^N, , 1) as int) AS newsId#174, clicked#150]
+         :  :  :        +- Project [cast(regexp_replace(userId#66, ^U, , 1) as int) AS userId#170, newsId#158, clicked#150]
+         :  :  :           +- Project [userId#66, newsId#158, clicked#150]
+         :  :  :              +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143, clicked#150, split(impression#143, -, -1)[0] AS newsId#158]
+         :  :  :                 +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143, CASE WHEN EndsWith(impression#143, -1) THEN 1 ELSE 0 END AS clicked#150]
+         :  :  :                    +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143]
+         :  :  :                       +- Generate explode(split(impressions#69,  , -1)), false, [impression#143]
+         :  :  :                          +- Project [_c0#55 AS impressionId#65, _c1#56 AS userId#66, _c2#57 AS timestamp#67, _c3#58 AS click_history#68, _c4#59 AS impressions#69]
+         :  :  :                             +- Relation [_c0#55,_c1#56,_c2#57,_c3#58,_c4#59] csv
+         :  :  +- Project [userId#170 AS userId#201, newsId#174 AS newsId#202, clicked#150 AS clicked#203]
+         :  :     +- Project [userId#170, newsId#174, clicked#150]
+         :  :        +- Filter (rank#187 <= 4)
+         :  :           +- Project [userId#170, newsId#174, clicked#150, rand#181, rank#187]
+         :  :              +- Project [userId#170, newsId#174, clicked#150, rand#181, rank#187, rank#187]
+         :  :                 +- Window [row_number() windowspecdefinition(userId#170, rand#181 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#187], [userId#170], [rand#181 ASC NULLS FIRST]
+         :  :                    +- Project [userId#170, newsId#174, clicked#150, rand#181]
+         :  :                       +- Project [userId#170, newsId#174, clicked#150, rand(-5982541605485824327) AS rand#181]
+         :  :                          +- Filter (clicked#150 = 0)
+         :  :                             +- Filter atleastnnonnulls(3, userId#170, newsId#174, clicked#150)
+         :  :                                +- Project [userId#170, cast(regexp_replace(newsId#158, ^N, , 1) as int) AS newsId#174, clicked#150]
+         :  :                                   +- Project [cast(regexp_replace(userId#66, ^U, , 1) as int) AS userId#170, newsId#158, clicked#150]
+         :  :                                      +- Project [userId#66, newsId#158, clicked#150]
+         :  :                                         +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143, clicked#150, split(impression#143, -, -1)[0] AS newsId#158]
+         :  :                                            +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143, CASE WHEN EndsWith(impression#143, -1) THEN 1 ELSE 0 END AS clicked#150]
+         :  :                                               +- Project [impressionId#65, userId#66, timestamp#67, click_history#68, impressions#69, impression#143]
+         :  :                                                  +- Generate explode(split(impressions#69,  , -1)), false, [impression#143]
+         :  :                                                     +- Project [_c0#196 AS impressionId#65, _c1#197 AS userId#66, _c2#198 AS timestamp#67, _c3#199 AS click_history#68, _c4#200 AS impressions#69]
+         :  :                                                        +- Relation [_c0#196,_c1#197,_c2#198,_c3#199,_c4#200] csv
+         :  +- Project [_1#638 AS id#643, _2#639 AS features#644]
+         :     +- SerializeFromObject [knownnotnull(assertnotnull(input[0, scala.Tuple2, true]))._1 AS _1#638, staticinvoke(class org.apache.spark.sql.catalyst.expressions.UnsafeArrayData, ArrayType(FloatType,false), fromPrimitiveArray, knownnotnull(assertnotnull(input[0, scala.Tuple2, true]))._2, true, false, true) AS _2#639]
+         :        +- ExternalRDD [obj#637]
+         +- Project [_1#650 AS id#655, _2#651 AS features#656]
+            +- SerializeFromObject [knownnotnull(assertnotnull(input[0, scala.Tuple2, true]))._1 AS _1#650, staticinvoke(class org.apache.spark.sql.catalyst.expressions.UnsafeArrayData, ArrayType(FloatType,false), fromPrimitiveArray, knownnotnull(assertnotnull(input[0, scala.Tuple2, true]))._2, true, false, true) AS _2#651]
+               +- ExternalRDD [obj#649]
+
+2024-12-11 13:04:33,143 - ALS_Run_Train - INFO - Spark session stopped.

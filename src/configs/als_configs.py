@@ -9,6 +9,13 @@ ALS_CONFIG = {
     "model_save_path": "saved_models/als_model",
 }
 
+DATASET_CONFIG = {
+    "size": "demo",            # Dataset size: "demo", "small", or "large"
+    "npratio": 4,              # Negative sampling ratio for training. Adjust this ratio based on class imbalance requirements
+    "data_path": "./data/mind" # Path to store MIND datasets
+}
+
+
 TRAIN_TEST_SPLIT = {
     "train_ratio": 0.8,  
     "seed": 47,          

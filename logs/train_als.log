@@ -1,1 +1,13 @@
 2024-12-10 17:32:38,390 - ALS_Training - INFO - Starting ALS model training...
+2024-12-11 12:58:15,767 - ALS_Training - INFO - Starting ALS model training...
+2024-12-11 12:58:27,138 - ALS_Training - INFO - Training ALS model - Iteration 1/5
+2024-12-11 12:58:32,680 - ALS_Training - INFO - Training ALS model - Iteration 2/5
+2024-12-11 12:58:35,997 - ALS_Training - INFO - Training ALS model - Iteration 3/5
+2024-12-11 12:58:39,188 - ALS_Training - INFO - Training ALS model - Iteration 4/5
+2024-12-11 12:58:43,112 - ALS_Training - INFO - Training ALS model - Iteration 5/5
+2024-12-11 13:03:50,917 - ALS_Training - INFO - Starting ALS model training...
+2024-12-11 13:04:01,078 - ALS_Training - INFO - Training ALS model - Iteration 1/5
+2024-12-11 13:04:10,984 - ALS_Training - INFO - Training ALS model - Iteration 2/5
+2024-12-11 13:04:17,288 - ALS_Training - INFO - Training ALS model - Iteration 3/5
+2024-12-11 13:04:23,533 - ALS_Training - INFO - Training ALS model - Iteration 4/5
+2024-12-11 13:04:29,609 - ALS_Training - INFO - Training ALS model - Iteration 5/5

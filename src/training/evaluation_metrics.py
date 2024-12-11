@@ -4,13 +4,17 @@
 import pyspark.sql.functions as F
 from pyspark.ml.evaluation import RegressionEvaluator
 from recommenders.evaluation.spark_evaluation import SparkRankingEvaluation
+from configs.als_configs import EVAL_CONFIG
+
 
 # Compute ranking-based metrics for the ALS model.
-def compute_ranking_metrics(predictions, k=10):
+def compute_ranking_metrics(predictions, top_k=None):
+    if top_k is None:
+        top_k = EVAL_CONFIG["k"]
 
     prediction_and_labels = predictions \
         .groupBy("userId") \
-        .agg(F.collect_list(F.struct("prediction", "itemId")).alias("predictions")) \
+        .agg(F.collect_list(F.struct("prediction", "newsId")).alias("predictions")) \
         .select("userId", "predictions")
 
     # Instantiate SparkRankingEvaluation
