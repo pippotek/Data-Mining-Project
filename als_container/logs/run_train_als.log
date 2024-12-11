@@ -1,0 +1,26 @@
+2024-12-09 15:41:48,612 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 15:41:59,381 - ALS_Run_Train - ERROR - An error occurred during training: Extracted files not found: ./data/mind/MINDdemo_train.zip/data/mind/train/behaviors.tsv, ./data/mind/MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-09 15:41:59,518 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 15:46:58,153 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 15:47:02,676 - ALS_Run_Train - ERROR - An error occurred during training: requirement failed: The number of columns doesn't match.
+Old column names (4): _c0, _c1, _c2, _c3
+New column names (5): impressionId, userId, timestamp, click_history, impressions
+2024-12-09 15:47:03,074 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 17:30:17,757 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 17:30:21,832 - ALS_Run_Train - ERROR - An error occurred during training: requirement failed: The number of columns doesn't match.
+Old column names (4): _c0, _c1, _c2, _c3
+New column names (5): impressionId, userId, timestamp, click_history, impressions
+2024-12-09 17:30:22,139 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 17:33:18,945 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 17:33:27,918 - ALS_Run_Train - ERROR - An error occurred during training: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv
+2024-12-09 17:33:28,391 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 17:33:56,886 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 17:34:04,359 - ALS_Run_Train - ERROR - An error occurred during training: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv
+2024-12-09 17:34:04,776 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 17:34:38,704 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 17:34:47,381 - ALS_Run_Train - ERROR - An error occurred during training: Extracted files not found: ./data/mind/train/behaviors.tsv, ./data/mind/valid/behaviors.tsv
+2024-12-09 17:34:47,623 - ALS_Run_Train - INFO - Spark session stopped.
+2024-12-09 17:37:27,508 - ALS_Run_Train - INFO - Starting data loading...
+2024-12-09 17:37:32,314 - ALS_Run_Train - INFO - Starting ALS training with data source: recommenders
+2024-12-09 17:37:32,484 - ALS_Run_Train - ERROR - An error occurred during training: requirement failed: Column userId must be of type numeric but was actually of type string.
+2024-12-09 17:37:32,915 - ALS_Run_Train - INFO - Spark session stopped.

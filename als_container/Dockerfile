@@ -69,4 +69,6 @@ WORKDIR /app
 COPY . /app
 
 # Start Jupyter by default
-CMD ["jupyter", "notebook", "--no-browser", "--allow-root"]
+#CMD ["jupyter", "notebook", "--no-browser", "--allow-root"]
+
+CMD ["python3", "-m" , "scripts.run_train_als"]

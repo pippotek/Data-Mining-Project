@@ -5,7 +5,6 @@ import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, rand
 from pyspark.sql.window import Window
 from utilities.logger import get_logger
-from utilities.db_utils import read_from_db, write_to_db
 from recommenders.datasets.mind import download_mind, extract_mind
 from recommenders.datasets.download_utils import unzip_file
 
@@ -70,28 +69,69 @@ def load_data_split(spark: SparkSession, config: Dict[str, str], query: str, tra
 
 
 # Downloads, extracts and prepares the MIND dataset from the recommenders library. Returns paths to train and val folders 
-def load_and_prepare_mind_dataset(size="demo", dest_path="./data/mind"):
+def load_and_prepare_mind_dataset(size="demo", dest_path="/data/mind"):
+    """
+    Downloads, extracts, and prepares the MIND dataset inside the container.
+    """
     try:
+        # Create destination path if it doesn't exist
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+            logger.info(f"Created directory: {dest_path}")
+
         logger.info(f"Downloading and extracting the {size} MIND dataset to {dest_path}...")
 
+        # Download the dataset (download_mind should handle this)
         train_zip, valid_zip = download_mind(size=size, dest_path=dest_path)
+        train_folder = os.path.join(dest_path, "train")
+        valid_folder = os.path.join(dest_path, "valid")
+
+        # Extract the dataset (extract_mind should handle this)
         extract_mind(
             train_zip, valid_zip,
-            train_folder=os.path.join(dest_path, "train"),
-            valid_folder=os.path.join(dest_path, "valid"),
+            train_folder=train_folder,
+            valid_folder=valid_folder
         )
 
-        # Correcting paths based on your observed extracted structure
-        extracted_base_path = os.path.join(dest_path, f"MIND{size}_train.zip/data/mind")
-        extracted_train_path = os.path.join(extracted_base_path, "train/behaviors.tsv")
-        extracted_valid_path = os.path.join(extracted_base_path, "valid/behaviors.tsv")
+        # Construct paths to behaviors.tsv files
+        train_file = os.path.join(train_folder, "behaviors.tsv")
+        valid_file = os.path.join(valid_folder, "behaviors.tsv")
 
-        if not (os.path.exists(extracted_train_path) and os.path.exists(extracted_valid_path)):
-            raise FileNotFoundError(f"Extracted files not found: {extracted_train_path}, {extracted_valid_path}")
+        # Validate the files exist
+        if not (os.path.exists(train_file) and os.path.exists(valid_file)):
+            raise FileNotFoundError(f"Extracted files not found: {train_file}, {valid_file}")
 
-        logger.info(f"MIND dataset prepared successfully. Train: {extracted_train_path}, Valid: {extracted_valid_path}")
-        return extracted_train_path, extracted_valid_path
+        logger.info(f"MIND dataset prepared successfully. Train: {train_file}, Valid: {valid_file}")
+        return train_file, valid_file
 
     except Exception as e:
         logger.error(f"An error occurred while downloading or extracting the MIND dataset: {e}")
         raise
+
+# Example placeholder functions for download_mind and extract_mind
+def download_mind(size, dest_path):
+    """
+    Placeholder for the actual function that downloads the MIND dataset.
+    """
+    train_zip = os.path.join(dest_path, f"MIND{size}_train.zip")
+    valid_zip = os.path.join(dest_path, f"MIND{size}_valid.zip")
+    # Simulate downloading files
+    with open(train_zip, "w") as f:
+        f.write("")  # Create an empty file for demonstration
+    with open(valid_zip, "w") as f:
+        f.write("")  # Create an empty file for demonstration
+    logger.info(f"Downloaded: {train_zip} and {valid_zip}")
+    return train_zip, valid_zip
+
+def extract_mind(train_zip, valid_zip, train_folder, valid_folder):
+    """
+    Placeholder for the actual function that extracts the MIND dataset.
+    """
+    os.makedirs(train_folder, exist_ok=True)
+    os.makedirs(valid_folder, exist_ok=True)
+    # Simulate extraction
+    with open(os.path.join(train_folder, "behaviors.tsv"), "w") as f:
+        f.write("user_id\tnews_id\ttimestamp\tclick_history\timpression_id\n")
+    with open(os.path.join(valid_folder, "behaviors.tsv"), "w") as f:
+        f.write("user_id\tnews_id\ttimestamp\tclick_history\timpression_id\n")
+    logger.info(f"Extracted to {train_folder} and {valid_folder}")
