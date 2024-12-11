@@ -1,0 +1,15 @@
+{"time":"2024-12-10T17:20:14.500572307+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-10T17:20:14.500608281+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241210_172014-dixttjqe/logs/debug-core.log"}
+{"time":"2024-12-10T17:20:15.22155136+01:00","level":"INFO","msg":"created new stream","id":"dixttjqe"}
+{"time":"2024-12-10T17:20:15.221633895+01:00","level":"INFO","msg":"stream: started","id":"dixttjqe"}
+{"time":"2024-12-10T17:20:15.2217945+01:00","level":"INFO","msg":"sender: started","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:15.221828736+01:00","level":"INFO","msg":"handler: started","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:15.221850809+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:15.246624657+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-10T17:20:16.225566278+01:00","level":"INFO","msg":"stream: closing","id":"dixttjqe"}
+{"time":"2024-12-10T17:20:16.225672126+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-10T17:20:16.226746495+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-10T17:20:16.22693459+01:00","level":"INFO","msg":"handler: closed","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:16.226970748+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:16.227003703+01:00","level":"INFO","msg":"sender: closed","stream_id":"dixttjqe"}
+{"time":"2024-12-10T17:20:16.227261257+01:00","level":"INFO","msg":"stream: closed","id":"dixttjqe"}

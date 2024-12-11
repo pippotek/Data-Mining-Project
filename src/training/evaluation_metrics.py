@@ -1,7 +1,6 @@
 # NOTE: SparkRankingEvaluation used in this script assumes a specific format for 'predictions_and_labels'. 
 # Make sure that this format is correct beyond the initial tests.
 
-
 import pyspark.sql.functions as F
 from pyspark.ml.evaluation import RegressionEvaluator
 from recommenders.evaluation.spark_evaluation import SparkRankingEvaluation
@@ -13,17 +12,6 @@ def compute_ranking_metrics(predictions, k=10):
         .groupBy("userId") \
         .agg(F.collect_list(F.struct("prediction", "itemId")).alias("predictions")) \
         .select("userId", "predictions")
-
-    # DEBUGGING STEPS, TO BE DELETED IN FINAL VERSION
-    #print("Schema of prediction_and_labels:")
-    #prediction_and_labels.printSchema()
-
-    #print("Sample data from prediction_and_labels:")
-    #prediction_and_labels.show(10, truncate=False)
-
-    #print("Rows with null or empty predictions:")
-    #prediction_and_labels.filter(F.col("predictions").isNull() | (F.size(F.col("predictions")) == 0)).show(10, truncate=False)
-    # END OF DEBUGGING STEPS
 
     # Instantiate SparkRankingEvaluation
     ranking_eval = SparkRankingEvaluation(prediction_and_labels, k=k)

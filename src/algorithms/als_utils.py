@@ -10,18 +10,22 @@ def create_als_model():
         regParam=ALS_CONFIG["reg_param"],
         implicitPrefs=ALS_CONFIG["implicit_prefs"],
         alpha=ALS_CONFIG["alpha"],
-        coldStartStrategy=ALS_CONFIG["cold_start_strategy"],
         userCol="userId", 
         itemCol="newsId", 
-        ratingCol="clicked" # Make sure this is the final name of our binary column 
+        ratingCol="clicked",
+        coldStartStrategy=ALS_CONFIG["cold_start_strategy"] 
     )
     return als
 
-def save_model(model, path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-    model.save(path)
-    print(f"Model saved at {path}")
+def save_model(model: ALSModel, model_save_path: str):
+    directory = os.path.dirname(model_save_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)  
+    try:
+        model.write().overwrite().save(model_save_path)
+        print(f"Model saved successfully at {model_save_path}")
+    except Exception as e:
+        print(f"Error saving the model: {e}")
 
 def load_model(path):
     if not os.path.exists(path):

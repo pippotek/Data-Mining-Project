@@ -1,0 +1,15 @@
+{"time":"2024-12-10T12:16:57.393293756+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-10T12:16:57.393309153+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241210_121657-z3l7rdob/logs/debug-core.log"}
+{"time":"2024-12-10T12:16:58.227420487+01:00","level":"INFO","msg":"created new stream","id":"z3l7rdob"}
+{"time":"2024-12-10T12:16:58.227489264+01:00","level":"INFO","msg":"stream: started","id":"z3l7rdob"}
+{"time":"2024-12-10T12:16:58.227721956+01:00","level":"INFO","msg":"handler: started","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:16:58.228604884+01:00","level":"INFO","msg":"sender: started","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:16:58.228729138+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:16:58.248660509+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-12-10T12:25:13.471468242+01:00","level":"INFO","msg":"stream: closing","id":"z3l7rdob"}
+{"time":"2024-12-10T12:25:13.471550844+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-12-10T12:25:13.472432538+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-12-10T12:25:13.472840977+01:00","level":"INFO","msg":"handler: closed","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:25:13.472858011+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:25:13.472893066+01:00","level":"INFO","msg":"sender: closed","stream_id":"z3l7rdob"}
+{"time":"2024-12-10T12:25:13.472916808+01:00","level":"INFO","msg":"stream: closed","id":"z3l7rdob"}

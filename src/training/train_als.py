@@ -51,37 +51,46 @@ def load_training_data(spark,
 
 
 def train_als_model(training_data, validation_data, model_save_path):
+    
+    # COMMENTED FOR DEBUGGING, WANDB/LOGGER MIGHT BE THE CAUSE OF THE BROKEN TRAINING LOOP
     wandb.init(
         project="MIND-RS",
         name=f"als_rank_{ALS_CONFIG['rank']}_reg_{ALS_CONFIG['reg_param']}",
         config=ALS_CONFIG
     )
-
+    
     logger.info("Starting ALS model training...")
     als = create_als_model()
-    model = als.fit(training_data)
-    logger.info("ALS model training completed.")
+    
+    for iteration in range(ALS_CONFIG["max_iter"]):
+        
+        als.setMaxIter(iteration + 1)
+        model = als.fit(training_data)
 
-    logger.info("Generating predictions for validation data...")
+        predictions = make_predictions(model, validation_data)
+
+        regression_metrics = compute_regression_metrics(predictions)
+        rmse = regression_metrics["RMSE"]
+        logger.info(f"Training ALS model - Iteration {iteration + 1}/{ALS_CONFIG['max_iter']}")
+        logger.info(f"Validation RMSE: {rmse}")
+
+        wandb.log({
+            "RMSE": rmse,
+            "Iteration": iteration + 1
+        })
+
+    # Final predictions and metrics
     predictions = make_predictions(model, validation_data)
-
-    logger.info("Evaluating the ALS model...")
     regression_metrics = compute_regression_metrics(predictions)
     rmse = regression_metrics["RMSE"]
-    mae = regression_metrics["MAE"]
-    logger.info(f"Validation RMSE: {rmse}")
-
+    
     wandb.log({
-        "RMSE": rmse,
-        "rank": ALS_CONFIG["rank"],
-        "maxIter": ALS_CONFIG["max_iter"],
-        "regParam": ALS_CONFIG["reg_param"],
-        "alpha": ALS_CONFIG["alpha"],
-    })
-    logger.info("Metrics logged to WandB.")
+        "Final RMSE": rmse
+    })    
 
     logger.info("Saving the trained ALS model...")
     save_model(model, model_save_path)
+    
     logger.info(f"ALS model saved successfully to {model_save_path}.")
 
     wandb.finish()

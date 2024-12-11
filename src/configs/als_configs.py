@@ -1,7 +1,7 @@
 # ALS model hyperparameters and configuration settings
 ALS_CONFIG = {
-    "rank": 10,               # Number of latent factors
-    "max_iter": 20,           # Number of iterations to run the optimization
+    "rank": 5, #10,               # Number of latent factors
+    "max_iter": 5, #20,           # Number of iterations to run the optimization
     "reg_param": 0.1,         # Regularization parameter
     "implicit_prefs": True,   # If True, ALS will use implicit feedback
     "alpha": 1.0,             # Confidence parameter (only relevant if implicit_prefs=True)

@@ -61,9 +61,6 @@ def preprocess_behaviors_mind(
     train_df = process_behaviors(train_behaviors)
     valid_df = process_behaviors(valid_behaviors)
     
-    # Add printSchema for debugging (DELETE IN FINAL VERSION)
-    #logger.info("Schema of train_df:")
-    #train_df.printSchema()
 
     logger.info("Preprocessing of MIND dataset completed.")
     return train_df, valid_df
@@ -115,34 +112,3 @@ def load_and_prepare_mind_dataset(size="demo", dest_path="./data/mind"):
     except Exception as e:
         logger.error(f"An error occurred while preparing the MIND dataset: {e}")
         raise    
-
-
-# THE BLOCK BELOW IS JUST FOR DEBUGGING PURPOSES AND SHOULD BE EXCLUDED OF THE FINAL VERSION
-#if __name__ == "__main__":
-#    from pyspark.sql import SparkSession
-
-    # Initialize a Spark session
-#    spark = SparkSession.builder \
-#        .appName("DataUtilsDebug") \
-#        .getOrCreate()
-
-    # Paths to the train and valid datasets (replace these with actual paths if needed)
-#    train_path = f"./MINDdemo_train.zip/data/mind/train/behaviors.tsv"
-#    valid_path = f"./MINDdemo_train.zip/data/mind/valid/behaviors.tsv"
-
-    # Call the preprocessing function
-#    try:
-#        train_df, valid_df = preprocess_behaviors_mind(spark, train_path, valid_path)
-
-        # Debugging: Print schema and some rows
-#        print("Schema of train_df:")
-#        train_df.printSchema()
-#        print("First few rows of train_df:")
-#        train_df.show(5)
-
-#    except Exception as e:
-#        logger.error(f"An error occurred while running data_utils.py: {e}")
-
-#    finally:
-        # Stop the Spark session
-#        spark.stop()

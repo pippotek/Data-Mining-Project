@@ -1,0 +1,7 @@
+{"time":"2024-12-10T17:22:18.152476544+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
+{"time":"2024-12-10T17:22:18.152550236+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241210_172218-76kbmhgz/logs/debug-core.log"}
+{"time":"2024-12-10T17:22:18.743693374+01:00","level":"INFO","msg":"created new stream","id":"76kbmhgz"}
+{"time":"2024-12-10T17:22:18.743740521+01:00","level":"INFO","msg":"stream: started","id":"76kbmhgz"}
+{"time":"2024-12-10T17:22:18.743827606+01:00","level":"INFO","msg":"handler: started","stream_id":"76kbmhgz"}
+{"time":"2024-12-10T17:22:18.744122186+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"76kbmhgz"}
+{"time":"2024-12-10T17:22:18.744128517+01:00","level":"INFO","msg":"sender: started","stream_id":"76kbmhgz"}
