@@ -5,3 +5,8 @@ __pycache__/
 test.py
 *.jar
 wandb/
+logs/
+data/
+saved_models/
+.ipynb_checkpoints/
+news/

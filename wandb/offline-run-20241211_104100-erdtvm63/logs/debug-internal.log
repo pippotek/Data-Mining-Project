@@ -1,8 +1,0 @@
-{"time":"2024-12-11T10:41:00.838467486+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-12-11T10:41:00.838728042+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241211_104100-erdtvm63/logs/debug-core.log"}
-{"time":"2024-12-11T10:41:02.01550427+01:00","level":"INFO","msg":"created new stream","id":"erdtvm63"}
-{"time":"2024-12-11T10:41:02.015621062+01:00","level":"INFO","msg":"stream: started","id":"erdtvm63"}
-{"time":"2024-12-11T10:41:02.015816377+01:00","level":"INFO","msg":"handler: started","stream_id":"erdtvm63"}
-{"time":"2024-12-11T10:41:02.015932249+01:00","level":"INFO","msg":"sender: started","stream_id":"erdtvm63"}
-{"time":"2024-12-11T10:41:02.015976889+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"erdtvm63"}
-{"time":"2024-12-11T10:41:02.046926505+01:00","level":"INFO","msg":"Starting system monitor"}

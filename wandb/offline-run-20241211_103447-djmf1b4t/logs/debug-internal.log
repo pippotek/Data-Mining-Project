@@ -1,8 +1,0 @@
-{"time":"2024-12-11T10:34:47.380726598+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-12-11T10:34:47.380760535+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241211_103447-djmf1b4t/logs/debug-core.log"}
-{"time":"2024-12-11T10:34:48.304662651+01:00","level":"INFO","msg":"created new stream","id":"djmf1b4t"}
-{"time":"2024-12-11T10:34:48.304811776+01:00","level":"INFO","msg":"stream: started","id":"djmf1b4t"}
-{"time":"2024-12-11T10:34:48.304970823+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"djmf1b4t"}
-{"time":"2024-12-11T10:34:48.305096516+01:00","level":"INFO","msg":"sender: started","stream_id":"djmf1b4t"}
-{"time":"2024-12-11T10:34:48.305145444+01:00","level":"INFO","msg":"handler: started","stream_id":"djmf1b4t"}
-{"time":"2024-12-11T10:34:48.336585865+01:00","level":"INFO","msg":"Starting system monitor"}

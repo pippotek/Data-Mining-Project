@@ -1,8 +1,0 @@
-{"time":"2024-12-11T10:21:17.047890261+01:00","level":"INFO","msg":"using version","core version":"0.18.7"}
-{"time":"2024-12-11T10:21:17.047945481+01:00","level":"INFO","msg":"created symlink","path":"/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/wandb/offline-run-20241211_102117-87oy1iod/logs/debug-core.log"}
-{"time":"2024-12-11T10:21:18.244180765+01:00","level":"INFO","msg":"created new stream","id":"87oy1iod"}
-{"time":"2024-12-11T10:21:18.244244584+01:00","level":"INFO","msg":"stream: started","id":"87oy1iod"}
-{"time":"2024-12-11T10:21:18.244397666+01:00","level":"INFO","msg":"handler: started","stream_id":"87oy1iod"}
-{"time":"2024-12-11T10:21:18.244801421+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"87oy1iod"}
-{"time":"2024-12-11T10:21:18.244819195+01:00","level":"INFO","msg":"sender: started","stream_id":"87oy1iod"}
-{"time":"2024-12-11T10:21:18.268159253+01:00","level":"INFO","msg":"Starting system monitor"}
