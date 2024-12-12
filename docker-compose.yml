@@ -3,8 +3,10 @@ version: "3.8"
 services:
   als:
     build:
-      context: als_container/
-      dockerfile: Dockerfile  # First Dockerfile
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: als  # Specify the service for the build
     container_name: spark-als
     ports:
       - "8888:8888"  # Expose Jupyter notebook for this container
@@ -20,11 +22,32 @@ services:
 
   data-fetch:
     build:
-      context: data-fetch_container
-      dockerfile: Dockerfile  # Second Dockerfile
-    container_name: spark-py-app2
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: fetching  # Specify the service for the build
+    container_name: spark-data-fetch
     ports:
       - "8889:8888"  # Expose Jupyter notebook for this container
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    depends_on:
+      - mongodb
+
+  cbrs:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: cbrs  # Specify the service for the build
+    container_name: spark-cbrs
+    ports:
+      - "8890:8888"  # Expose Jupyter notebook for this container
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3
@@ -40,8 +63,6 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"  # Expose MongoDB default port
-    # volumes:
-    #   - mongo_data:/data/db  # Persistent storage for MongoDB data
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example

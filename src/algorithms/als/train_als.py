@@ -1,8 +1,8 @@
 import wandb
-from algorithms.als_utils import create_als_model, save_model, make_predictions
-from configs.als_configs import ALS_CONFIG
+from als_utils import create_als_model, save_model, make_predictions
+from als_configs import ALS_CONFIG
 from training.evaluation import evaluate_model
-from data_management.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
+from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
 from utilities.logger import get_logger
 #from recommenders.datasets.mind import download_mind, extract_mind
 
@@ -28,7 +28,7 @@ def load_training_data(spark,
         logger.info("MIND dataset preprocessed successfully.")
         
     elif data_source == "db":
-        from data_management.data_utils import load_data_split
+        from src.utilities.data_utils import load_data_split
         config = kwargs.get("config")
         query = kwargs.get("query")
         training_data, validation_data = load_data_split(spark, config=config, query=query)

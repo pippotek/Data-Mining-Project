@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 from train_als import train_als_model, load_training_data
 from als_configs import ALS_CONFIG
 from utilities.logger import get_logger
-from data_management.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
+from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 

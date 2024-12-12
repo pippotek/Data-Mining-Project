@@ -4,7 +4,7 @@
 import pyspark.sql.functions as F
 from pyspark.ml.evaluation import RegressionEvaluator
 from recommenders.evaluation.spark_evaluation import SparkRankingEvaluation
-from configs.als_configs import EVAL_CONFIG
+from src.algorithms.als.als_configs import EVAL_CONFIG
 
 
 # Compute ranking-based metrics for the ALS model.

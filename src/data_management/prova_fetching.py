@@ -3,7 +3,7 @@ import json
 import time
 from datetime import datetime, timedelta
 from collections import defaultdict
-from utilities import setup
+from src.configs import setup
 
 
 ### FETCHING SCRIPT, TO PERFECT

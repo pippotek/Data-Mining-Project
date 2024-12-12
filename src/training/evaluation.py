@@ -2,8 +2,8 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 from pyspark.ml.recommendation import ALSModel
 import wandb
-from data_management.data_utils import load_data_split
-from configs.als_configs import ALS_CONFIG, EVAL_CONFIG
+from src.utilities.data_utils import load_data_split
+from src.algorithms.als.als_configs import ALS_CONFIG, EVAL_CONFIG
 from training.evaluation_metrics import compute_ranking_metrics 
 
 wandb.init(project="MIND-RS", entity="MIND-RS", name="ALS_Evaluation")  # MIND-RS project should be set up as your default location on wandb

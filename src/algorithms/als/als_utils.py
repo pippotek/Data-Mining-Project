@@ -1,7 +1,7 @@
 import os
 from pyspark.ml.recommendation import ALS
 from pyspark.ml.recommendation import ALSModel
-from configs.als_configs import ALS_CONFIG
+from src.algorithms.als.als_configs import ALS_CONFIG
 
 def create_als_model():
     als = ALS(
