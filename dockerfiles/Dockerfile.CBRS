@@ -43,11 +43,11 @@ ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
 
 # Copy requirements early to leverage Docker cache
-COPY requirements_cbrs.txt /tmp/requirements_cbrs.txt
+COPY requirements/requirements_cbrs.txt requirements/requirements_cbrs.txt
 
 RUN pip install numpy scipy Cython
 # Install Python dependencies
-RUN pip install --no-cache-dir -r /tmp/requirements_cbrs.txt
+RUN pip install --no-cache-dir -r requirements/requirements_cbrs.txt
 
 # Install Jupyter
 RUN pip install --no-cache-dir notebook
