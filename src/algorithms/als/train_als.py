@@ -1,9 +1,9 @@
 import wandb
-from als_utils import create_als_model, save_model, make_predictions
-from als_configs import ALS_CONFIG
-from training.evaluation import evaluate_model
+from src.algorithms.als.als_utils import create_als_model, save_model, make_predictions
+from src.algorithms.als.als_configs import ALS_CONFIG
+from src.training.evaluation import evaluate_model
 from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
-from utilities.logger import get_logger
+from src.utilities.logger import get_logger
 #from recommenders.datasets.mind import download_mind, extract_mind
 
 

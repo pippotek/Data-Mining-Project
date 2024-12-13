@@ -5,26 +5,56 @@ import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, rand
 from pyspark.sql.window import Window
 from utilities.logger import get_logger
-from utilities.db_utils import read_from_db, write_to_db
 from recommenders.datasets.mind import download_mind, extract_mind
 from recommenders.datasets.download_utils import unzip_file
 
 logger = get_logger("DataUtils", log_file="logs/data_utils.log")
 
 
-# Preprocesses the behaviors table for training Spark's ALS model
+from pyspark.sql import SparkSession
+
+def fetch_data_from_mongo(spark: SparkSession, uri: str, db_name: str, collection_name: str):
+    """
+    Fetch data from a MongoDB collection into a PySpark DataFrame.
+
+    Parameters
+    ----------
+    spark : SparkSession
+        A SparkSession object, already configured to use the Mongo Spark connector.
+    uri : str
+        The MongoDB connection URI (e.g. "mongodb://user:password@mongodb:27017").
+    db_name : str
+        The name of the MongoDB database.
+    collection_name : str
+        The name of the collection to read from.
+
+    Returns
+    -------
+    pyspark.sql.DataFrame
+        A Spark DataFrame containing the data from the specified MongoDB collection.
+    """
+    df = (spark.read
+               .format("mongodb")
+               .option("uri", uri)
+               .option("database", db_name)
+               .option("collection", collection_name)
+               .load())
+    return df
+
 def preprocess_behaviors_mind(
     spark: SparkSession, 
-    train_path: str, 
-    valid_path: str, 
+    train_behaviors_df, 
+    valid_behaviors_df, 
     npratio: int = 4
 ):
-    logger.info(f"Starting to preprocess MIND dataset. Train: {train_path}, Valid: {valid_path}")
+    logger.info("Starting to preprocess MIND dataset from DataFrames.")
     
     def process_behaviors(df):
+        # df expected to have: userId, impressions
+        
         impressions_df = df.withColumn("impression", explode(split(col("impressions"), " ")))
     
-        # Extract clicked (1) or non-clicked (0) status
+        # Extract clicked (1) or non-clicked (0)
         impressions_df = impressions_df.withColumn(
             "clicked",
             when(col("impression").endswith("-1"), lit(1)).otherwise(lit(0))
@@ -39,28 +69,38 @@ def preprocess_behaviors_mind(
         impressions_df = impressions_df.dropna(subset=["userId", "newsId", "clicked"])
         
         positive_samples = impressions_df.filter(col("clicked") == 1)
-        negative_samples = impressions_df.filter(col("clicked") == 0) \
-            .withColumn("rand", rand())
+        negative_samples = impressions_df.filter(col("clicked") == 0).withColumn("rand", rand())
     
-        # Select npratio negative samples per positive sample (addressing class imbalance and making the matrix lighter)
+        # Select npratio negative samples per positive sample
         window = Window.partitionBy("userId").orderBy("rand")
         negative_samples = negative_samples.withColumn("rank", F.row_number().over(window)) \
             .filter(col("rank") <= npratio) \
             .drop("rank", "rand")
     
         combined_samples = positive_samples.union(negative_samples)
-    
         return combined_samples
 
-
-    train_behaviors = spark.read.csv(train_path, sep="\t", header=False) \
-        .toDF("impressionId", "userId", "timestamp", "click_history", "impressions")
-    valid_behaviors = spark.read.csv(valid_path, sep="\t", header=False) \
-        .toDF("impressionId", "userId", "timestamp", "click_history", "impressions")
+    # Rename columns to match what process_behaviors expects
+    # Original code expects:
+    # impressionId, userId, timestamp, click_history, impressions
+    train_behaviors = train_behaviors_df.select(
+        col("impression_id").alias("impressionId"),
+        col("user_id").alias("userId"),
+        col("time").alias("timestamp"),
+        col("history").alias("click_history"),
+        "impressions"
+    )
     
+    valid_behaviors = valid_behaviors_df.select(
+        col("impression_id").alias("impressionId"),
+        col("user_id").alias("userId"),
+        col("time").alias("timestamp"),
+        col("history").alias("click_history"),
+        "impressions"
+    )
+
     train_df = process_behaviors(train_behaviors)
     valid_df = process_behaviors(valid_behaviors)
-    
 
     logger.info("Preprocessing of MIND dataset completed.")
     return train_df, valid_df

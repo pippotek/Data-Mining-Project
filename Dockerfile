@@ -55,22 +55,17 @@ WORKDIR /app
 
 # Directly copy the files for each service
 ARG SERVICE
-COPY src/configs/config.yaml /app/src/configs/
 
 # For ALS
-COPY src/algorithms/als /app/src/algorithms/als
+COPY src /app/src
 
-# For CBRS
-COPY src/algorithms/cbrs /app/src/algorithms/cbrs
 
-# For Fetching
-COPY src/data_management/fetch_mind.py /app/src/data_management/fetch_mind.py
-
+ENV PYTHONPATH=/app/src:$PYTHONPATH
 
 # Default command for each service
 CMD bash -c "\
     if [ '${SERVICE}' = 'als' ]; then \
-        python3 -m src.algorithms.als.run_train_als; \
+        python3  src/algorithms/als/run_train_als.py; \
     elif [ '${SERVICE}' = 'cbrs' ]; then \
         jupyter notebook --no-browser --allow-root; \
     elif [ '${SERVICE}' = 'fetching' ]; then \

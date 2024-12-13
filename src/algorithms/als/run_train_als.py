@@ -1,31 +1,48 @@
 from pyspark.sql import SparkSession
-from train_als import train_als_model, load_training_data
-from als_configs import ALS_CONFIG
-from utilities.logger import get_logger
-from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
+from src.algorithms.als.train_als import train_als_model
+from src.algorithms.als.als_configs import ALS_CONFIG
+from src.utilities.logger import get_logger
+from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind, fetch_data_from_mongo
+from pyspark.sql import SparkSession
+import time
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 
 if __name__ == "__main__":
-    spark = SparkSession.builder \
-        .appName("ALS_Training") \
-        .getOrCreate()
+    time.sleep(60)
+    # Change this variable to switch data sources: "recommenders" or "db"
+    data_source = "db"
 
-    # Define the data source
-    data_source = "recommenders"  # Change to "db" or "csv" to switch data sources
+    spark = (SparkSession.builder
+        .appName("ALS_Training")
+        .config("spark.mongodb.read.connection.uri", "mongodb://root:example@mongodb:27017")
+        .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector:10.0.5")
+        .getOrCreate())
 
     logger.info("Starting data loading...")
     try:
-        # Load data based on the specified source
         if data_source == "recommenders":
-            # Prepare MIND dataset
+            # Original logic: download MIND data and preprocess from CSV files
             train_path, valid_path = load_and_prepare_mind_dataset(size="demo", dest_path="./data/mind")
             training_data, validation_data = preprocess_behaviors_mind(spark, train_path, valid_path, npratio=4)
+        
+        elif data_source == "db":
+            # New logic: fetch MIND data from MongoDB and preprocess
+            MONGO_URI = "mongodb://root:example@mongodb:27017"
+            DB_NAME = "mind_news"
+            
+            # Assume you have two collections: behaviors_train and behaviors_valid
+            train_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_train")
+            valid_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_valid")
+
+            # preprocess_behaviors_mind version that accepts DataFrames directly
+            training_data, validation_data = preprocess_behaviors_mind(spark, train_behaviors_df, valid_behaviors_df, npratio=4)
+        
         else:
             logger.error(f"Unsupported data source: {data_source}")
             raise ValueError(f"Unsupported data source: {data_source}")
 
-        # Train the ALS model
+        # Train the ALS model using the preprocessed training/validation data
         model_save_path = ALS_CONFIG["model_save_path"]
         logger.info(f"Starting ALS training with data source: {data_source}")
         train_als_model(training_data, validation_data, model_save_path)
