@@ -18,9 +18,9 @@ if __name__ == "__main__":
     try:
         wait_for_data(
             uri=MONGO_URI,
-            db_name="db_news",
+            db_name="mind_news",
             collection_name="behaviors_train",
-            check_field="impressions",  # A field you expect in the collection
+            check_field="impressions"
         )
         print("Starting training...")
         spark = (SparkSession.builder

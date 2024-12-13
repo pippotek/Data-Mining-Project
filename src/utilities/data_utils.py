@@ -101,7 +101,7 @@ MONGO_URI = "mongodb://root:example@mongodb:27017"
 DB_NAME = "mind_news"
 COLLECTION_NAME = "news"
 
-def wait_for_data(uri, db_name, collection_name, check_field, timeout=300, interval=10):
+def wait_for_data(uri, db_name, collection_name, check_field, timeout=600, interval=10):
     """
     Poll the MongoDB collection to ensure data exists.
 
@@ -113,6 +113,7 @@ def wait_for_data(uri, db_name, collection_name, check_field, timeout=300, inter
         timeout (int): Maximum time to wait in seconds.
         interval (int): Time between checks in seconds.
     """
+    
     client = MongoClient(uri)
     db = client[db_name]
     collection = db[collection_name]
