@@ -10,14 +10,24 @@ logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 
 if __name__ == "__main__":
     time.sleep(60)
+
+    MONGO_URI = "mongodb://root:example@mongodb:27017"
     # Change this variable to switch data sources: "recommenders" or "db"
     data_source = "db"
 
     spark = (SparkSession.builder
         .appName("ALS_Training")
-        .config("spark.mongodb.read.connection.uri", "mongodb://root:example@mongodb:27017")
-        .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector:10.0.5")
-        .getOrCreate())
+        .master("local[*]") \
+        .config("spark.driver.memory", "16G") \
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
+        .config("spark.kryoserializer.buffer.max", "2000M") \
+        .config("spark.driver.maxResultSize", "0") \
+        .config("spark.jars.packages",
+                "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0") \
+        .config("spark.mongodb.read.connection.uri", MONGO_URI) \
+        .config("spark.mongodb.write.connection.uri", MONGO_URI) \
+        .getOrCreate()
+        )
 
     logger.info("Starting data loading...")
     try:

@@ -13,7 +13,7 @@ services:
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3
-      - WANDB_API_KEY=a967166cb6f5f15eefe606cee45c0b6a185c2174
+      - WANDB_API_KEY=PUTYOURKEYHERE
       - JAVA_HOME=/usr/local/openjdk-11
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=python3
