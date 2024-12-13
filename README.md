@@ -1,4 +1,4 @@
-# Data Mining Project: News Recommendation System
+News Recommendation System
 
 ## Project Overview
 This project involves building a **news recommendation system** using the **MIND dataset** provided by Microsoft. The system employs three recommendation algorithms: 
