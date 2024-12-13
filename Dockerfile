@@ -55,6 +55,7 @@ WORKDIR /app
 
 # Directly copy the files for each service
 ARG SERVICE
+# COPY src/configs/config.yaml /app/src/configs/
 
 # For ALS
 COPY src /app/src
