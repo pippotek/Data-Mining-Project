@@ -100,9 +100,7 @@ Abstract Entities: [{“Label”: “PGA Tour”, “Type”: “O”, “Wikida
 ---
 
 ## Data Storage
-
-- The preprocessed data and intermediate results are stored in a **MongoDB database**.
-- MongoDB is used to efficiently manage the structured data for user interactions, news metadata, and embeddings.
+ **MongoDB database**.
 
 ---
 
