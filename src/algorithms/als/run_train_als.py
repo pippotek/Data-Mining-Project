@@ -51,6 +51,8 @@ if __name__ == "__main__":
                 train_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_train")
                 valid_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_valid")
 
+                train_behaviors_df.show()
+                
                 # preprocess_behaviors_mind version that accepts DataFrames directly
                 training_data, validation_data = preprocess_behaviors_mind(spark, train_behaviors_df, valid_behaviors_df, npratio=4)
 

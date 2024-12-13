@@ -68,6 +68,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_data:/data/db  # Mount the volume for data persistence
 
   mongo-express:
     image: mongo-express:latest
@@ -81,3 +83,6 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_SERVER: mongodb  # Correct service name
 
+volumes:
+  mongo_data:
+    driver: local

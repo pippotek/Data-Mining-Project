@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from setup import load_config
+from src.configs.setup import load_config
 from pyspark.sql.functions import concat_ws, col, regexp_replace, lower
 from sparknlp.base import DocumentAssembler, EmbeddingsFinisher
 from sparknlp.annotator import Tokenizer as SparkNLPTokenizer, BertEmbeddings, StopWordsCleaner
@@ -7,7 +7,7 @@ from pyspark.ml import Pipeline
 import sparknlp
 
 # --- Configuration Loading ---
-config = load_config("src/config.yaml")
+config = load_config("src/configs/config.yaml")
 
 if config:
     uri = config.get('db_connection_string', None)
@@ -41,14 +41,15 @@ spark.sparkContext.setLogLevel("WARN")
 # --- Data Loading ---
 df = spark.read \
     .format("mongodb") \
-    .option("database", "datamining") \
-    .option("collection", "news") \
+    .option("database", "mind_news") \
+    .option("collection", "news_valid") \
     .load()
+df.show()
 
-df = df.select("_id", "title", "summary", "excerpt")
+df = df.select("_id", "title", "abstract")
 
 # --- Data Preprocessing ---
-df = df.withColumn("combined_text", concat_ws(" ", col("title"), col("summary"), col("excerpt"))) \
+df = df.withColumn("combined_text", concat_ws(" ", col("title"), col("abstract"))) \
        .withColumn("clean_text", lower(regexp_replace(col("combined_text"), "[^a-zA-Z0-9 ]", "")))
 
 # --- Spark NLP Pipeline Setup ---
@@ -87,20 +88,21 @@ nlp_pipeline = Pipeline(stages=[
 # --- Pipeline Fitting and Transformation ---
 nlp_model = nlp_pipeline.fit(df)
 processed_df = nlp_model.transform(df)
+processed_df.show()
 
 # --- Result Selection ---
 # Select only '_id' and 'embedding' for the update
 result_df = processed_df.select("_id", "embedding")
-result_df.show()
 
 
-# # --- Writing Results Back to MongoDB with Partial Updates ---
-# result_df.write \
-#     .format("mongodb") \
-#     .option("database", "datamining") \
-#     .option("collection", "news_embeddings") \
-#     .mode("append") \
-#     .save()
+
+# --- Writing Results Back to MongoDB with Partial Updates ---
+result_df.write \
+    .format("mongodb") \
+    .option("database", "mind_news") \
+    .option("collection", "news_embeddings") \
+    .mode("append") \
+    .save()
 
 # --- Graceful Shutdown ---
 spark.stop()

@@ -43,6 +43,7 @@ def train_als_model(training_data, validation_data, model_save_path):
 
     # Final predictions and metrics
     predictions = make_predictions(model, validation_data)
+    predictions.show()
     regression_metrics = compute_regression_metrics(predictions)
     #ranking_metrics = compute_ranking_metrics(predictions, top_k=EVAL_CONFIG["k"])
     rmse = regression_metrics["RMSE"]
