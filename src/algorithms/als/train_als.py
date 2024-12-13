@@ -1,81 +1,60 @@
 import wandb
 from src.algorithms.als.als_utils import create_als_model, save_model, make_predictions
 from src.algorithms.als.als_configs import ALS_CONFIG
-from src.training.evaluation import evaluate_model
-from src.utilities.data_utils import load_and_prepare_mind_dataset, preprocess_behaviors_mind
+from src.training.evaluation_metrics import compute_regression_metrics, compute_ranking_metrics
 from src.utilities.logger import get_logger
+from src.configs.setup import load_config
+from src.algorithms.als.als_configs import ALS_CONFIG, EVAL_CONFIG
 #from recommenders.datasets.mind import download_mind, extract_mind
 
 
 logger = get_logger(name="ALS_Training", log_file="logs/train_als.log")
 
-#Load training and validation data based on the selected data source.
-def load_training_data(spark,
-                       data_source = "recommenders",  # "db", "recommenders", or "csv"
-                       **kwargs):
-    if data_source == "recommenders":
-        
-        train_path = "./data/mind/train/behaviors.tsv"
-        valid_path = "./data/mind/valid/behaviors.tsv"
-        
-        logger.info("Preprocessing MIND dataset...")        
-        
-        training_data, validation_data = preprocess_behaviors_mind(
-            spark=spark,
-            train_path=train_path,
-            valid_path=valid_path
-        )
-        logger.info("MIND dataset preprocessed successfully.")
-        
-    elif data_source == "db":
-        from src.utilities.data_utils import load_data_split
-        config = kwargs.get("config")
-        query = kwargs.get("query")
-        training_data, validation_data = load_data_split(spark, config=config, query=query)
-    
-    elif data_source == "csv":
-        file_path = kwargs.get("file_path", "./data/csv")
-        logger.info(f"Loading training data from CSV: {file_path}/training_data.csv")
-        training_data = spark.read.csv(f"{file_path}/training_data.csv", header=True)
-        logger.info(f"Loading validation data from CSV: {file_path}/validation_data.csv")
-        validation_data = spark.read.csv(f"{file_path}/validation_data.csv", header=True)
-    
-    else:
-        raise ValueError(f"Unsupported data source: {data_source}")
-
-    return training_data, validation_data
-
 
 def train_als_model(training_data, validation_data, model_save_path):
+    config = load_config('src/configs/config.yaml')
+    wandb.login(key=config.get('wandb_key'))
     wandb.init(
         project="MIND-RS",
         name=f"als_rank_{ALS_CONFIG['rank']}_reg_{ALS_CONFIG['reg_param']}",
-        config=ALS_CONFIG
+        config=ALS_CONFIG,
+
     )
 
     logger.info("Starting ALS model training...")
     als = create_als_model()
-    model = als.fit(training_data)
-    logger.info("ALS model training completed.")
+    
+    for iteration in range(ALS_CONFIG["max_iter"]):
+        
+        als.setMaxIter(iteration + 1)
+        model = als.fit(training_data)
 
-    logger.info("Generating predictions for validation data...")
+        predictions = make_predictions(model, validation_data)
+
+        regression_metrics = compute_regression_metrics(predictions)
+        rmse = regression_metrics["RMSE"]
+        logger.info(f"Training ALS model - Iteration {iteration + 1}/{ALS_CONFIG['max_iter']}")
+        
+
+        wandb.log({
+            "RMSE": rmse,
+            "Iteration": iteration + 1
+        })
+
+    # Final predictions and metrics
     predictions = make_predictions(model, validation_data)
-
-    logger.info("Evaluating the ALS model...")
-    rmse = evaluate_model(predictions, metric="rmse")
-    logger.info(f"Validation RMSE: {rmse}")
-
+    regression_metrics = compute_regression_metrics(predictions)
+    ranking_metrics = compute_ranking_metrics(predictions, top_k=EVAL_CONFIG["k"])
+    rmse = regression_metrics["RMSE"]
+    
     wandb.log({
-        "RMSE": rmse,
-        "rank": ALS_CONFIG["rank"],
-        "maxIter": ALS_CONFIG["max_iter"],
-        "regParam": ALS_CONFIG["reg_param"],
-        "alpha": ALS_CONFIG["alpha"],
+        "Final RMSE": rmse
     })
-    logger.info("Metrics logged to WandB.")
+    logger.info(f"Final RMSE: {rmse}")    
 
     logger.info("Saving the trained ALS model...")
-    save_model(model, model_save_path)
+    save_model(model, ALS_CONFIG["model_save_path"])
+    
     logger.info(f"ALS model saved successfully to {model_save_path}.")
 
     wandb.finish()

@@ -2,18 +2,18 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 from pyspark.ml.recommendation import ALSModel
 import wandb
-from src.utilities.data_utils import load_data_split
 from src.algorithms.als.als_configs import ALS_CONFIG, EVAL_CONFIG
 from training.evaluation_metrics import compute_ranking_metrics 
+from src.configs.setup import load_config
 
+config = load_config('src/configs/config.yaml')
+
+wandb.login(key=config.get('wandb_key'))
 wandb.init(project="MIND-RS", entity="MIND-RS", name="ALS_Evaluation")  # MIND-RS project should be set up as your default location on wandb
 
 def evaluate_model(spark: SparkSession, als_model_path: str, test_data_path: str, k: int = 10):
     print(f"Loading ALS model from: {als_model_path}")
     als_model = ALSModel.load(als_model_path) 
-
-    print(f"Loading test data from: {test_data_path}")  
-    test_data = load_data_split(spark, test_data_path)
 
     print("Generating recommendations...")
     user_recommendations = als_model.recommendForAllUsers(k)

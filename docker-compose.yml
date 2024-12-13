@@ -13,13 +13,13 @@ services:
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3
-      - WANDB_API_KEY=PUTYOURKEYHERE
       - JAVA_HOME=/usr/local/openjdk-11
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=python3
       - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
     depends_on:
       - mongodb
+      - data-fetch
 
   data-fetch:
     build:
@@ -39,6 +39,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
     depends_on:
       - mongodb
+     
 
   cbrs:
     build:
@@ -80,7 +81,3 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_SERVER: mongodb  # Correct service name
 
-
-
-volumes:
-  mongo_data:

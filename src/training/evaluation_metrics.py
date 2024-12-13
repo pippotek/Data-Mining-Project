@@ -18,7 +18,7 @@ def compute_ranking_metrics(predictions, top_k=None):
         .select("userId", "predictions")
 
     # Instantiate SparkRankingEvaluation
-    ranking_eval = SparkRankingEvaluation(prediction_and_labels, k=k)
+    ranking_eval = SparkRankingEvaluation(prediction_and_labels, k=top_k)
 
     precision_at_k = ranking_eval.precision_at_k()
     recall_at_k = ranking_eval.recall_at_k()

@@ -1,5 +1,6 @@
 recommenders
 matplotlib
+pymongo
 seaborn
 pandera==0.19.3
 numpy<2.0
