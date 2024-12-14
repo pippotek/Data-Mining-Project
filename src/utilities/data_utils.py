@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession, DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, rand
 from pyspark.sql.window import Window
-from utilities.logger import get_logger
+from src.utilities.logger import get_logger
 
 logger = get_logger("DataUtils", log_file="logs/data_utils.log")
 
@@ -97,11 +97,7 @@ def preprocess_behaviors_mind(
 from pymongo import MongoClient
 import time
 
-MONGO_URI = "mongodb://root:example@mongodb:27017"
-DB_NAME = "mind_news"
-COLLECTION_NAME = "news"
-
-def wait_for_data(uri, db_name, collection_name, check_field, timeout=600, interval=10):
+def wait_for_data(uri, db_name, collection_names, check_field, timeout=600, interval=10):
     """
     Poll the MongoDB collection to ensure data exists.
 
@@ -116,14 +112,30 @@ def wait_for_data(uri, db_name, collection_name, check_field, timeout=600, inter
     
     client = MongoClient(uri)
     db = client[db_name]
-    collection = db[collection_name]
+    for collection_name in collection_names:
 
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        if collection.find_one({check_field: {"$exists": True}}):
-            print("Data is available in the database.")
-            return True
-        print("Waiting for data...")
-        time.sleep(interval)
+        collection = db[collection_name]
 
-    raise TimeoutError(f"Data was not available in the database within {timeout} seconds.")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if collection.find_one({check_field: {"$exists": True}}):
+                print("Data is available in the database.")
+                return True
+            print("Waiting for data...")
+            time.sleep(interval)
+
+        raise TimeoutError(f"Data was not available in the database within {timeout} seconds.")
+
+def write_to_mongodb(df: DataFrame, MONGO_URI, DATABASE_NAME, COLLECTION_NAME):
+    """
+    Write the given DataFrame to the MongoDB embeddings collection.
+    
+    :param df: DataFrame to write
+    """
+    (df.write
+     .format("mongodb")
+     .option("uri", MONGO_URI)
+     .option("database", DATABASE_NAME)
+     .option("collection", COLLECTION_NAME)
+     .mode("append")
+     .save())

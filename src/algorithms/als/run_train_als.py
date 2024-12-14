@@ -19,9 +19,9 @@ if __name__ == "__main__":
         wait_for_data(
             uri=MONGO_URI,
             db_name="mind_news",
-            collection_name="behaviors_train",
-            check_field="impressions"
-        )
+            collection_names=["behaviors_train", "news_train", "behaviors_valid", "news_valid"],
+            check_field="_id"
+            )
         print("Starting training...")
         spark = (SparkSession.builder
         .appName("ALS_Training")

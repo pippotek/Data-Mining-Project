@@ -1,4 +1,5 @@
 recommenders
+pymongo
 matplotlib
 seaborn
 pandera==0.19.3
