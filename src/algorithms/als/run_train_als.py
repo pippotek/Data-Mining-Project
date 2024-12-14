@@ -26,8 +26,6 @@ if __name__ == "__main__":
         spark = (SparkSession.builder
         .appName("ALS_Training")
         .master("local[*]") \
-        .config("spark.driver.memory", "8G") \
-        .config("spark.executor.memory", "8G") \
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
         .config("spark.kryoserializer.buffer.max", "2000M") \
         .config("spark.driver.maxResultSize", "0") \
@@ -50,8 +48,6 @@ if __name__ == "__main__":
                 # Assume you have two collections: behaviors_train and behaviors_valid
                 train_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_train")
                 valid_behaviors_df = fetch_data_from_mongo(spark, MONGO_URI, DB_NAME, "behaviors_valid")
-
-                train_behaviors_df.show()
                 
                 # preprocess_behaviors_mind version that accepts DataFrames directly
                 training_data, validation_data = preprocess_behaviors_mind(spark, train_behaviors_df, valid_behaviors_df, npratio=4)

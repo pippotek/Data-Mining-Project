@@ -16,7 +16,7 @@ NEWS_VALID_COLLECTION = "news_valid"
 
 
 # MIND dataset parameters
-mind_type = "small"  # "demo", "small", or "large"
+mind_type = "large"  # "demo", "small", or "large"
 tmpdir = TemporaryDirectory()
 data_path = tmpdir.name
 
@@ -59,38 +59,65 @@ def main():
     # Connect to MongoDB
     db = connect_to_mongo(MONGO_URI, DB_NAME)
 
-    # Check if data already exists in MongoDB
-    if db[BEHAVIORS_TRAIN_COLLECTION].estimated_document_count() > 0 and db[NEWS_TRAIN_COLLECTION].estimated_document_count() > 0:
-        print("Training data already exists in MongoDB. Skipping download and loading for training data.")
-    else:
-        print("Downloading and extracting MIND training dataset...")
-        train_zip, _ = download_mind(size=mind_type, dest_path=data_path)
-        train_dir = os.path.join(data_path, 'train')
-        unzip_file(train_zip, train_dir, clean_zip_file=False)
+    # Paths to marker files or directories
+    train_marker = os.path.join(data_path, 'train', 'behaviors.tsv')
+    valid_marker = os.path.join(data_path, 'valid', 'behaviors.tsv')
 
-        # Paths to training TSV files
-        behaviors_train_tsv = os.path.join(train_dir, "behaviors.tsv")
-        news_train_tsv = os.path.join(train_dir, "news.tsv")
+    if mind_type == 'large':
 
-        # Load training data into MongoDB
-        load_tsv_to_mongo(db, BEHAVIORS_TRAIN_COLLECTION, behaviors_train_tsv, BEHAVIORS_HEADERS)
-        load_tsv_to_mongo(db, NEWS_TRAIN_COLLECTION, news_train_tsv, NEWS_HEADERS)
+        if db[BEHAVIORS_TRAIN_COLLECTION].estimated_document_count() > 1000000 and db[NEWS_TRAIN_COLLECTION].estimated_document_count() > 100000:
+            print("Training data already exists in MongoDB. Skipping download and loading for training data.")
+        elif os.path.exists(train_marker):
+            print("Training data already downloaded and extracted. Loading into MongoDB...")
+            train_dir = os.path.dirname(train_marker)
+            
+            # Paths to training TSV files
+            behaviors_train_tsv = os.path.join(train_dir, "behaviors.tsv")
+            news_train_tsv = os.path.join(train_dir, "news.tsv")
 
-    if db[BEHAVIORS_VALID_COLLECTION].estimated_document_count() > 0 and db[NEWS_VALID_COLLECTION].estimated_document_count() > 0:
-        print("Validation data already exists in MongoDB. Skipping download and loading for validation data.")
-    else:
-        print("Downloading and extracting MIND validation dataset...")
-        _, valid_zip = download_mind(size=mind_type, dest_path=data_path)
-        valid_dir = os.path.join(data_path, 'valid')
-        unzip_file(valid_zip, valid_dir, clean_zip_file=False)
+            # Load training data into MongoDB
+            load_tsv_to_mongo(db, BEHAVIORS_TRAIN_COLLECTION, behaviors_train_tsv, BEHAVIORS_HEADERS)
+            load_tsv_to_mongo(db, NEWS_TRAIN_COLLECTION, news_train_tsv, NEWS_HEADERS)
+        else:
+            print("Downloading and extracting MIND training dataset...")
+            train_zip, _ = download_mind(size=mind_type, dest_path=data_path)
+            train_dir = os.path.join(data_path, 'train')
+            unzip_file(train_zip, train_dir, clean_zip_file=False)
 
-        # Paths to validation TSV files
-        behaviors_valid_tsv = os.path.join(valid_dir, "behaviors.tsv")
-        news_valid_tsv = os.path.join(valid_dir, "news.tsv")
+            # Paths to training TSV files
+            behaviors_train_tsv = os.path.join(train_dir, "behaviors.tsv")
+            news_train_tsv = os.path.join(train_dir, "news.tsv")
 
-        # Load validation data into MongoDB
-        load_tsv_to_mongo(db, BEHAVIORS_VALID_COLLECTION, behaviors_valid_tsv, BEHAVIORS_HEADERS)
-        load_tsv_to_mongo(db, NEWS_VALID_COLLECTION, news_valid_tsv, NEWS_HEADERS)
+            # Load training data into MongoDB
+            load_tsv_to_mongo(db, BEHAVIORS_TRAIN_COLLECTION, behaviors_train_tsv, BEHAVIORS_HEADERS)
+            load_tsv_to_mongo(db, NEWS_TRAIN_COLLECTION, news_train_tsv, NEWS_HEADERS)
+
+        if db[BEHAVIORS_VALID_COLLECTION].estimated_document_count() > 50000 and db[NEWS_VALID_COLLECTION].estimated_document_count() > 300000:
+            print("Validation data already exists in MongoDB. Skipping download and loading for validation data.")
+        elif os.path.exists(valid_marker):
+            print("Validation data already downloaded and extracted. Loading into MongoDB...")
+            valid_dir = os.path.dirname(valid_marker)
+
+            # Paths to validation TSV files
+            behaviors_valid_tsv = os.path.join(valid_dir, "behaviors.tsv")
+            news_valid_tsv = os.path.join(valid_dir, "news.tsv")
+
+            # Load validation data into MongoDB
+            load_tsv_to_mongo(db, BEHAVIORS_VALID_COLLECTION, behaviors_valid_tsv, BEHAVIORS_HEADERS)
+            load_tsv_to_mongo(db, NEWS_VALID_COLLECTION, news_valid_tsv, NEWS_HEADERS)
+        else:
+            print("Downloading and extracting MIND validation dataset...")
+            _, valid_zip = download_mind(size=mind_type, dest_path=data_path)
+            valid_dir = os.path.join(data_path, 'valid')
+            unzip_file(valid_zip, valid_dir, clean_zip_file=False)
+
+            # Paths to validation TSV files
+            behaviors_valid_tsv = os.path.join(valid_dir, "behaviors.tsv")
+            news_valid_tsv = os.path.join(valid_dir, "news.tsv")
+
+            # Load validation data into MongoDB
+            load_tsv_to_mongo(db, BEHAVIORS_VALID_COLLECTION, behaviors_valid_tsv, BEHAVIORS_HEADERS)
+            load_tsv_to_mongo(db, NEWS_VALID_COLLECTION, news_valid_tsv, NEWS_HEADERS)
 
 if __name__ == "__main__":
     main()
