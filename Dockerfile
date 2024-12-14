@@ -68,7 +68,7 @@ CMD bash -c "\
     if [ '${SERVICE}' = 'als' ]; then \
         python3  src/algorithms/als/run_train_als.py; \
     elif [ '${SERVICE}' = 'cbrs' ]; then \
-        jupyter notebook --no-browser --allow-root; \
+        python3 src/algorithms/cbrs/clean_embed.py; \
     elif [ '${SERVICE}' = 'fetching' ]; then \
         python3 -m src.data_management.fetch_mind; \
     else \
