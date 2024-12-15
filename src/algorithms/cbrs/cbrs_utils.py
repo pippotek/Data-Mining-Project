@@ -1,27 +1,18 @@
-remove duplicates: # src/algorithms/cbrs/pipeline.py
-from pyspark.sql.functions import udf, col
-from pyspark.sql.types import ArrayType, FloatType
+from pyspark.sql.types import ArrayType, FloatType, DoubleType
 from pyspark.sql import SparkSession, DataFrame
 from src.utilities.data_utils import * 
 from pyspark.sql.functions import split, explode, avg
 from pyspark.sql.functions import explode, split, when, lit, udf, desc
 from pyspark.sql.window import Window
-from pyspark.sql.functions import collect_list
-from pyspark.sql.functions import pandas_udf, col, collect_list
+from pyspark.sql.functions import col, collect_list
 import pandas as pd
 from pyspark.sql.functions import rank
 import numpy as np
-from pyspark.sql.functions import pandas_udf
-
 import logging
 from pyspark.sql.functions import expr
 from pyspark.sql.functions import split, transform, col
 from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql.types import ArrayType, DoubleType
-import pandas as pd
 from pyspark.ml.linalg import VectorUDT
-import numpy as np
-from pyspark.sql import Window
 import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, row_number, desc
 
