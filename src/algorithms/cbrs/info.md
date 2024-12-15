@@ -1,164 +1,132 @@
-To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-spark-cbrs  | INFO:__main__:Spark Session initialized successfully.
-spark-cbrs  | INFO:__main__:Loading data from MongoDB...
-INFO:__main__:Train records: 51282
-spark-cbrs  | INFO:__main__:Validation records: 42416
-spark-cbrs  | INFO:__main__:Combining train and validation data...
-spark-cbrs  | INFO:__main__:Dropping duplicate news articles based on 'news_id'...
-spark-cbrs  | INFO:__main__:Unique records after deduplication: 65238
-spark-cbrs  | INFO:__main__:Preprocessing data...
-spark-cbrs  | INFO:__main__:Setting up Spark NLP pipeline...
-spark-cbrs  | small_bert_L2_768 download started this may take some time.
+## Content-Based Recommendation System (CBRS)
 
-# Content-Based Recommendation System
+### EMBEDDINGS
 
-## Overview
+The** **`clean_embed.py` script is responsible for preprocessing and embedding news articles. Here’s a step-by-step breakdown of its workflow:
 
-**Content-Based Recommendation Systems** are a specific type of recommendation system that focuses on the features of items and user profiles. These systems suggest items similar to those the user has interacted with in the past by analyzing the content or attributes of the items (in our case news).
+#### **1. Data Loading**
 
-### Example Use Cases:
+* Reads data from MongoDB:
+  * **`news_train`** : Training news data.
+  * **`news_valid`** : Validation news data.
+  * **`news_combined_embeddings`** : Collection of already processed embeddings.
+* Combines training and validation data into a single DataFrame.
 
-* Suggesting similar news articles based on the content of articles a user has already read.
-* Recommending products with descriptions or categories matching previously purchased items.
+#### **2. Preprocessing Data**
 
-## Clean_embed.py
+* **Removing Duplicates** : Ensures no duplicate** **`news_id` values exist.
+* **Filtering Processed Records** : Excludes articles already present in the** **`news_combined_embeddings` collection using a** **`left_anti` join.
+* **Cleaning Text** :
+* Combines** **`title` and** **`abstract` fields into a** **`combined_text` column.
+* Removes non-alphanumeric characters and converts text to lowercase.
 
-The script performs: 
+#### **3. Building NLP Pipeline**
 
-### 1.** ****Data Loading and Combination**:
+* Constructs a Spark NLP pipeline with the following stages:
+  * **DocumentAssembler** : Converts text into a format suitable for NLP tasks.
+  * **Tokenizer** : Splits text into tokens (words).
+  * **StopWordsCleaner** : Removes common stop words (e.g., "the", "and").
+  * **BERT Embeddings** : Generates word embeddings using a pretrained BERT model.
+  * **Sentence Embeddings** : Averages word embeddings to form sentence-level representations.
+  * **Embeddings Finisher** : Converts embeddings into a format suitable for output.
 
-* Loads news data from two MongoDB collections:** **`<span>news_train</span>` and** **`<span>news_valid</span>`.
-* Combines the data into a single dataset.
-* Drops duplicate articles based on the unique** **`<span>news_id</span>` field.
+#### **4. Batch Processing**
 
-### 2.** ****Preprocessing**:
-
-* Combines the** **`<span>title</span>` and** **`<span>abstract</span>` fields into a single** **`<span>combined_text</span>` column.
-* Cleans the** **`<span>combined_text</span>` by removing special characters and converting text to lowercase.
-
-### 3.** ****Embedding Generation**:
-
-* Uses the Spark NLP library to generate** ****BERT-based embeddings** for each news article.
-* Tokenizes the cleaned text, removes stopwords, and computes embeddings for each article using BERT.
-* Aggregates the token-level embeddings into a single** ****sentence embedding** using an averaging strategy.
-
-### 4.** ****Batch Processing**:
-
-* Processes the articles in batches to handle large datasets efficiently.
-* Saves the embeddings for each article into a MongoDB collection (`<span>news_combined_embeddings</span>`).
+* Processes the data in batches to handle large-scale datasets efficiently:
+  * Applies the NLP pipeline to generate embeddings for each batch.
+  * Converts embeddings into a string format for storage.
+  * Writes the processed embeddings back to MongoDB (`news_combined_embeddings` collection).
 
 ---
 
-## Script Details
+### CBRS PIPELINE
 
-### **1. Spark Initialization**
+The** **`run_cbrs.py` script implements the main pipeline for the Content-Based Recommendation System. Here’s how it works:
 
-The script initializes a Spark session with appropriate configurations for memory and MongoDB connectivity.
+#### **1. Data Loading**
 
-```
-spark = SparkSession.builder \
-    .appName("Combine News and Generate Embeddings") \
-    .master("local[*]") \
-    .config("spark.driver.memory", "16G") \
-    .config("spark.executor.memory", "16G") \
-    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
-    .config("spark.mongodb.read.connection.uri", MONGO_URI) \
-    .config("spark.mongodb.write.connection.uri", MONGO_URI) \
-    .getOrCreate()
-```
+* Loads:
+  * **News Embeddings** : Preprocessed embeddings from** **`news_combined_embeddings`.
+  * **Behavioral Data** :
+  * **`behaviors_train`** : Training user click behaviors.
+  * **`behaviors_valid`** : Validation user click behaviors.
 
-### **2. Data Loading and Combination**
+#### **2. Preprocessing**
 
-* Reads news data from the** **`<span>news_train</span>` and** **`<span>news_valid</span>` collections in MongoDB.
-* Combines the two datasets using** **`<span>union()</span>`.
-* Removes duplicate rows based on the** **`<span>news_id</span>` field.
+* **News Embeddings** : Converts the string representation of embeddings back into numerical arrays.
+* **User Behavior** : Explodes the** **`history` of user interactions into individual news items for easier processing.
 
-```
-train_df = spark.read.format("mongodb").option("database", DATABASE_NAME).option("collection", TRAIN_COLLECTION).load()
-valid_df = spark.read.format("mongodb").option("database", DATABASE_NAME).option("collection", VALID_COLLECTION).load()
-combined_df = train_df.union(valid_df).dropDuplicates(["news_id"])
-```
+#### **3. User Profile Creation**
 
-### **3. Preprocessing**
+* Uses historical user behavior to create profiles:
 
-* Combines the** **`<span>title</span>` and** **`<span>abstract</span>` fields into a single** **`<span>combined_text</span>` field.
-* Cleans the combined text by removing special characters and converting it to lowercase.
+  * Joins user interaction data with news embeddings.
+  * Averages the embeddings of all news articles a user interacted with to create a** ****user embedding** (personalized representation of a user).
+  * 
 
-```
-combined_df = combined_df.withColumn("combined_text", concat_ws(" ", col("title"), col("abstract")))
-combined_df = combined_df.withColumn("clean_text", lower(regexp_replace(col("combined_text"), "[^a-zA-Z0-9 ]", "")))
-```
+  #### **4. Recommendations**
 
-### **4. NLP Pipeline for Embedding Generation**
 
-The script sets up an NLP pipeline using Spark NLP to compute embeddings for each article:
+  * Matches user profiles with news embeddings to generate recommendations:
+    * Joins user profiles with news articles.
+    * Computes similarity scores using** ** **Cosine Similarity** :
+      * Measures the similarity between user embeddings and news embeddings.
+    * Ranks news articles for each user based on similarity scores.
 
-1. **Text Processing**:
-   * Tokenization
-   * Stopword removal
-2. **BERT Embeddings**:
-   * Computes token-level embeddings using a pre-trained BERT model (`<span>small_bert_L2_768</span>`).
-   * Aggregates token-level embeddings into a single sentence embedding using the "average" pooling strategy.
+  #### **5. Storing Recommendations (TO DO)**
 
-```
-nlp_pipeline = Pipeline(stages=[
-    DocumentAssembler().setInputCol("clean_text").setOutputCol("document"),
-    Tokenizer().setInputCols(["document"]).setOutputCol("token"),
-    StopWordsCleaner().setInputCols(["token"]).setOutputCol("clean_tokens"),
-    BertEmbeddings.pretrained("small_bert_L2_768", "en")
-        .setInputCols(["document", "clean_tokens"])
-        .setOutputCol("embeddings"),
-    SentenceEmbeddings()
-        .setInputCols(["document", "embeddings"])
-        .setOutputCol("sentence_embeddings")
-        .setPoolingStrategy("AVERAGE"),
-    EmbeddingsFinisher()
-        .setInputCols(["sentence_embeddings"])
-        .setOutputCols(["embedding"])
-        .setOutputAsVector(False)
-])
-```
+  * Writes top-`k` recommendations for each user to MongoDB in the** **`cbrs_recommendations` collection.
 
-### **5. Batch Processing**
+  #### **6. Evaluation (TO DO)**
 
-* Processes the dataset in batches to handle large data efficiently.
-* Generates and saves embeddings for each batch into the** **`<span>news_combined_embeddings</span>` collection in MongoDB.
+  * Compares recommendations against user click behavior in** **`behaviors_valid` using metrics like** ** **Precision@k** .
 
-```
-for start in range(0, total_records, BATCH_SIZE):
-    batch_df = combined_df.filter((col("row_num") > start) & (col("row_num") <= end))
-    processed_batch_df = nlp_model.transform(batch_df)
-    news_embeddings_df = processed_batch_df.select("news_id", "embedding")
-    news_embeddings_df.write \
-        .format("mongodb") \
-        .option("database", DATABASE_NAME) \
-        .option("collection", EMBEDDINGS_COLLECTION) \
-        .mode("append") \
-        .save()
-```
+### **Example: Preprocessing and User Profile Creation**
+
+#### **Sample Data** :
+
+| **Column**        | **Content**               |
+| ----------------------- | ------------------------------- |
+| **Impression ID** | 123                             |
+| **User ID**       | U131                            |
+| **Time**          | 11/13/2019 8:36:57 AM           |
+| **History**       | N11 N21 N103                    |
+| **Impressions**   | N4-1 N34-1 N156-0 N207-0 N198-0 |
 
 ---
 
-## To-Do: Next Steps
+#### **Step 1: Explode the** **`History` Column**
 
-### **1. Behaviors Preprocessing**
+The** **`History` column is exploded to create one row per interaction:
 
-* Load user behavior data from the** **`<span>behaviors</span>` collection.
-* Preprocess user click and impression logs.
-* Create user profiles based on the articles they have interacted with.
-
-### **2. Model Building**
-
-* Build a similarity-based model using the computed embeddings.
-* Compute similarity between articles using cosine similarity.
-* Rank and recommend articles based on similarity scores.
-
-### **3. Evaluation**
-
-* Evaluate the recommendation system using metrics like Precision, Recall, and NDCG (Normalized Discounted Cumulative Gain).
+| **User ID** | **History Item** |
+| ----------------- | ---------------------- |
+| U131              | N11                    |
+| U131              | N21                    |
+| U131              | N103                   |
 
 ---
 
-## Conclusion
+#### **Step 2: Join with News Embeddings**
 
-This script provides the foundation for a content-based recommendation system by processing and embedding news articles. Future steps include behavior preprocessing, model development, and evaluation to complete the recommendation pipeline.
+Join the exploded** **`History Item` with the** **`news_combined_embeddings` collection to retrieve embeddings:
+
+| **User ID** | **News ID** | **Embedding** |
+| ----------------- | ----------------- | ------------------- |
+| U131              | N11               | [0.1, 0.2, 0.3]     |
+| U131              | N21               | [0.2, 0.3, 0.4]     |
+| U131              | N103              | [0.3, 0.4, 0.5]     |
+
+---
+
+#### **Step 3: Compute the Average Embedding**
+
+Average the embeddings for all** **`History Items` associated with the user to create a** ** **user embedding** :
+
+| **User ID** | **User Embedding** |
+| ----------------- | ------------------------ |
+| U131              | [0.2, 0.3, 0.4]          |
+
+ **Formula for Averaging** :
+
+User Embedding=[0.1,0.2,0.3]+[0.2,0.3,0.4]+[0.3,0.4,0.5]3=[0.2,0.3,0.4]**User Embedding**=**3**[**0.1**,**0.2**,**0.3**]**+**[**0.2**,**0.3**,**0.4**]**+**[**0.3**,**0.4**,**0.5**]=**[**0.2**,**0.3**,**0.4**]**This embedding serves as the** ****personalized representation** of the user's preferences.

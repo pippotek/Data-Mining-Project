@@ -3,6 +3,8 @@ import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, rand
 from pyspark.sql.window import Window
 from src.utilities.logger import get_logger
+from pymongo import MongoClient
+import time
 
 logger = get_logger("DataUtils", log_file="logs/data_utils.log")
 
@@ -94,8 +96,6 @@ def preprocess_behaviors_mind(
     logger.info("Preprocessing of MIND dataset completed.")
     return train_df, valid_df
 
-from pymongo import MongoClient
-import time
 
 def wait_for_data(uri, db_name, collection_names, check_field, timeout=600, interval=10):
     """

@@ -48,7 +48,7 @@ ENV SERVICE=${SERVICE}
 
 # Copy and install the appropriate requirements file
 COPY requirements/requirements_${SERVICE}.txt /tmp/requirements.txt
-RUN pip install numpy scipy Cython && pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install numpy scipy Cython pyarrow && pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Create the working directory
 WORKDIR /app
@@ -66,9 +66,10 @@ ENV PYTHONPATH=/app/src:$PYTHONPATH
 # Default command for each service
 CMD bash -c "\
     if [ '${SERVICE}' = 'als' ]; then \
-        python3  src/algorithms/als/run_train_als.py; \
+        python3 src/algorithms/als/run_train_als.py; \
     elif [ '${SERVICE}' = 'cbrs' ]; then \
-        python3 src/algorithms/cbrs/clean_embed.py; \
+        python3 src/algorithms/cbrs/clean_embed.py && \
+        python3 src/algorithms/cbrs/run_cbrs.py; \
     elif [ '${SERVICE}' = 'fetching' ]; then \
         python3 -m src.data_management.fetch_mind; \
     else \

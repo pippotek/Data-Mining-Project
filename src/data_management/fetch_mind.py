@@ -16,7 +16,7 @@ NEWS_VALID_COLLECTION = "news_valid"
 
 
 # MIND dataset parameters
-mind_type = "large"  # "demo", "small", or "large"
+mind_type = "small"  # "demo", "small", or "large"
 tmpdir = TemporaryDirectory()
 data_path = tmpdir.name
 
@@ -63,7 +63,7 @@ def main():
     train_marker = os.path.join(data_path, 'train', 'behaviors.tsv')
     valid_marker = os.path.join(data_path, 'valid', 'behaviors.tsv')
 
-    if mind_type == 'large':
+    if mind_type == 'small':
 
         if db[BEHAVIORS_TRAIN_COLLECTION].estimated_document_count() > 1000000 and db[NEWS_TRAIN_COLLECTION].estimated_document_count() > 100000:
             print("Training data already exists in MongoDB. Skipping download and loading for training data.")
