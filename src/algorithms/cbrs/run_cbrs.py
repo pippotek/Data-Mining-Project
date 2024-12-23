@@ -38,10 +38,8 @@ def main():
                  .config("spark.mongodb.output.writeConcern.w", "1")
                  .getOrCreate())
 
-        logger.info("Spark Session initialized with increased memory.")
+        logger.info("Spark Session initialized.")
 
-        main_embedding(spark)
-        
         # Load data
         news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
             spark,
@@ -65,15 +63,12 @@ def main():
         logger.info("User profiles created using Pandas UDAF.")
 
         # Compute recommendations on test data
-        try:
-            recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
-            recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
-            logger.info("Recommendations computed.")
+        recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
+        recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
+        logger.info("Recommendations computed.")
 
-        except Exception as e:
-            logger.error(f"Reccomendations not computed due to {e}")
-        # write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
-        # logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
+        write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
+        logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
 
         # Evaluate recommendations
         # metrics = evaluate_recommendations(recommendations_df, behaviors_test_df)
