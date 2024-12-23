@@ -68,7 +68,6 @@ CMD bash -c "\
     if [ '${SERVICE}' = 'als' ]; then \
         python3 src/algorithms/als/run_train_als.py; \
     elif [ '${SERVICE}' = 'cbrs' ]; then \
-        python3 src/algorithms/cbrs/clean_embed.py && \
         python3 src/algorithms/cbrs/run_cbrs.py; \
     elif [ '${SERVICE}' = 'fetching' ]; then \
         python3 -m src.data_management.fetch_mind; \

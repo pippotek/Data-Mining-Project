@@ -157,8 +157,7 @@ def process_batches(spark: SparkSession, df: DataFrame, nlp_model, batch_size: i
         logger.info("Batch %d to %d processed and saved.", start + 1, end)
 
 
-def main():
-    spark = init_spark_session()
+def main_embedding(spark):
     wait_for_data(
             uri=MONGO_URI,
             db_name="mind_news",
@@ -190,12 +189,9 @@ def main():
         process_batches(spark, filtered_df, nlp_model, BATCH_SIZE)
 
         logger.info("All batches processed successfully.")
+    except Exception as e:
 
-    finally:
-        logger.info("Stopping Spark Session...")
-        spark.stop()
-        logger.info("Spark Session stopped.")
+        logging.error(f"Error generating embeddings: {e}")
 
 
-if __name__ == "__main__":
-    main()
+

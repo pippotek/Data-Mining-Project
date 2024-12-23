@@ -10,13 +10,6 @@ services:
     container_name: spark-als
     ports:
       - "8888:8888"  # Expose Jupyter notebook for this container
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 2g
-
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3

@@ -1,16 +1,16 @@
 from pyspark.sql import SparkSession
 from src.algorithms.als.train_als import train_als_model
-from src.algorithms.als.als_configs import ALS_CONFIG
 from src.utilities.logger import get_logger
 from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data
 from pyspark.sql import SparkSession
+from src.configs.setup import load_config
 
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 
 if __name__ == "__main__":
 
-
+    config = load_config('src/configs/config.yaml')
     MONGO_URI = "mongodb://root:example@mongodb:27017"
     # Change this variable to switch data sources: "recommenders" or "db"
     data_source = "db"
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 raise ValueError(f"Unsupported data source: {data_source}")
 
             # Train the ALS model using the preprocessed training/validation data
-            model_save_path = ALS_CONFIG["model_save_path"]
+            model_save_path = config['ALS_CONFIG']["model_save_path"]
             logger.info(f"Starting ALS training with data source: {data_source}")
             train_als_model(training_data, validation_data, model_save_path)
 

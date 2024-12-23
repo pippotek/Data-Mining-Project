@@ -1,5 +1,6 @@
 from src.algorithms.cbrs.cbrs_utils import * 
 from src.utilities.data_utils import * 
+from src.algorithms.cbrs.clean_embed import main_embedding
 import logging
 from pyspark.sql import SparkSession
 from pyspark.storagelevel import StorageLevel
@@ -86,6 +87,8 @@ def main():
 
         logger.info("Spark Session initialized.")
 
+        main_embedding(spark)
+        
         # Set Spark Log Level to WARN to reduce verbosity
         spark.sparkContext.setLogLevel("WARN")
 
@@ -107,56 +110,18 @@ def main():
         # Create User Profiles
         user_profiles_df = create_user_profiles_with_pandas_udaf(behaviors_train_df, news_embeddings_df)
         user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
+        user_profiles_df.limit(5).show()
         logger.info("User profiles created and persisted.")
 
-        # Compute Recommendations using ANN
-        top_k = 10  # Set your desired top_k
-        recommendations_df = compute_recommendations_ann(
-            user_profiles_df,
-            news_embeddings_df,
-            top_k=top_k
-        )
-        recommendations_df.printSchema()
-        recommendations_df.show(5)
-        
-        ###############################################################
-        
-        # Handle Duplicate '_id' Columns if Any
-        if "_id" in recommendations_df.columns:
-            # It's common for MongoDB to add an '_id' field. If it already exists in data, consider renaming or dropping.
-            recommendations_df = recommendations_df.drop("_id")
-            logger.info("Duplicate '_id' column dropped.")
+        # Compute recommendations on test data
+        recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
+        recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
+        logger.info("Recommendations computed.")
 
-        # Select Relevant Columns
-        filtered_recommendations_df = recommendations_df.select(
-            "user_id", "news_id", "similarity_score", "rank"
-        )
-        
+        write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
+        logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
 
-        ###############################################################
-        optimized_recommendations_df = filtered_recommendations_df.coalesce(50) 
-        logger.info("DataFrame repartitioned to 50 partitions for optimized writing.")
-        
-
-        essential_columns = ["user_id", "news_id", "similarity_score", "rank"]
-        for column in essential_columns:
-            null_count = optimized_recommendations_df.filter(col(column).isNull() | isnan(col(column))).count()
-        logger.info(f"Nulls or NaNs in {column}: {null_count}")
-    
-        ###############################################################
-        # # Write Recommendations to MongoDB Using Spark Connector
-        (optimized_recommendations_df
-            .write
-            .format("mongodb")
-            .mode("append")
-            .option("database", DATABASE_NAME)
-            .option("collection", RECOMMENDATIONS_COLLECTION)
-            .option("spark.mongodb.output.batchSize", "1000")  # Adjust batch size as needed
-            .save())
-        logger.info(f"Recommendations written to '{RECOMMENDATIONS_COLLECTION}' collection in MongoDB.")
-
-
-        # Optional: Evaluate Recommendations
+        Optional: Evaluate Recommendations
         # Uncomment the following lines if you wish to evaluate
         # metrics = evaluate_recommendations(recommendations_df, behaviors_test_df)
         # logger.info(f"Evaluation Metrics: {metrics}")
