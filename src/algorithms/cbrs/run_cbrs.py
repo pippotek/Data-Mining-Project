@@ -40,6 +40,8 @@ def main():
 
         logger.info("Spark Session initialized.")
 
+        main_embedding(spark)
+        
         # Load data
         news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
             spark,
