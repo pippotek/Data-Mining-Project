@@ -1,5 +1,7 @@
+wandb_key : "YOUR_KEY_HERE"
+
 # ALS model hyperparameters and configuration settings
-ALS_CONFIG = {
+ALS_CONFIG : {
     "rank": 5, #10,               # Number of latent factors
     "max_iter": 5, #20,           # Number of iterations to run the optimization
     "reg_param": 0.1,         # Regularization parameter
@@ -9,19 +11,24 @@ ALS_CONFIG = {
     "model_save_path": "saved_models/als_model",
 }
 
-DATASET_CONFIG = {
-    "size": "demo",            # Dataset size: "demo", "small", or "large"
-    "npratio": 4,              # Negative sampling ratio for training. Adjust this ratio based on class imbalance requirements
-    "data_path": "./data/mind" # Path to store MIND datasets
+DATASET_CONFIG : {
+    "size": "small",            # Dataset size: "demo", "small", or "large"
+    "npratio": 4,              # Negative sampling ratio for training. Adjust this ratio based on class imbalance requirements # Path to store MIND datasets
 }
 
 
-TRAIN_TEST_SPLIT = {
+TRAIN_TEST_SPLIT : {
     "train_ratio": 0.8,  
     "seed": 47,          
 }
 
 # Evaluation metrics
-EVAL_CONFIG = {
+EVAL_CONFIG : {
     "k": 10,  # Number of recommendations for evaluation
 }
+
+services: 
+  als:
+    enabled : true
+  cbrs:
+    enabled : true

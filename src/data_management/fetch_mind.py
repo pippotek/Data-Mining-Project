@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from src.data_management.mind import download_mind
 from recommenders.datasets.download_utils import unzip_file
 from tempfile import TemporaryDirectory
-
+from src.configs.setup import load_config
 # MongoDB connection details
 MONGO_URI = "mongodb://root:example@mongodb:27017"
 DB_NAME = "mind_news"
@@ -14,9 +14,9 @@ NEWS_TRAIN_COLLECTION = "news_train"
 NEWS_VALID_COLLECTION = "news_valid"
 
 
-
+config = load_config("src/configs/config.yaml")
 # MIND dataset parameters
-mind_type = "small"  # "demo", "small", or "large"
+mind_type = config['DATASET_CONFIG']['size']  # "demo", "small", or "large"
 tmpdir = TemporaryDirectory()
 data_path = tmpdir.name
 
