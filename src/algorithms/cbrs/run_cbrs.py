@@ -37,7 +37,7 @@ def main():
                  .config("spark.mongodb.output.writeConcern.w", "1")
                  .getOrCreate())
 
-        logger.info("Spark Session initialized with increased memory.")
+        logger.info("Spark Session initialized.")
 
         # Load data
         news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
@@ -64,8 +64,21 @@ def main():
         recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
         recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
         logger.info("Recommendations computed.")
+        
+        
+        
+        ###############################################################
+        
+        # Drop or rename duplicate '_id' column
+        if recommendations_df.columns.count("_id") > 1:
+            # Drop all '_id' columns to prevent duplication
+            recommendations_df = recommendations_df.drop("_id")
+            logger.info("Duplicate '_id' column dropped.")
 
-        write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
+        filtered_recommendations_df = recommendations_df.select(
+        "user_id", "news_id", "clicked", "similarity_score", "rank")
+
+        write_to_mongodb(filtered_recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
         logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
 
         # # Evaluate recommendations
