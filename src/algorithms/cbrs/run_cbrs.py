@@ -1,5 +1,6 @@
 from src.algorithms.cbrs.cbrs_utils import * 
 from src.utilities.data_utils import * 
+from src.algorithms.cbrs.clean_embed import main_embedding
 import logging
 from pyspark.sql import SparkSession
 from pyspark.storagelevel import StorageLevel
@@ -39,6 +40,8 @@ def main():
 
         logger.info("Spark Session initialized with increased memory.")
 
+        main_embedding(spark)
+        
         # Load data
         news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
             spark,
@@ -58,17 +61,21 @@ def main():
         # Create user profiles from training data using Pandas UDAF
         user_profiles_df = create_user_profiles_with_pandas_udaf(behaviors_train_df, news_embeddings_df)
         user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
+        user_profiles_df.limit(5).show()
         logger.info("User profiles created using Pandas UDAF.")
 
         # Compute recommendations on test data
-        recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
-        recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
-        logger.info("Recommendations computed.")
+        try:
+            recommendations_df = compute_recommendations(behaviors_test_df, news_embeddings_df, user_profiles_df, top_k=5)
+            recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
+            logger.info("Recommendations computed.")
 
-        write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
-        logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
+        except Exception as e:
+            logger.error(f"Reccomendations not computed due to {e}")
+        # write_to_mongodb(recommendations_df, MONGO_URI, DATABASE_NAME, RECOMMENDATIONS_COLLECTION)
+        # logger.info(f"Recommendations written to {RECOMMENDATIONS_COLLECTION} collection in MongoDB.")
 
-        # # Evaluate recommendations
+        # Evaluate recommendations
         # metrics = evaluate_recommendations(recommendations_df, behaviors_test_df)
         # logger.info(f"Evaluation Metrics: {metrics}")
 
