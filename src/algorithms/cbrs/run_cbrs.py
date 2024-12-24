@@ -38,16 +38,6 @@ from pyspark.sql.functions import (
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
-from pyspark.sql import SparkSession, DataFrame
-from pyspark.storagelevel import StorageLevel
-from pyspark.sql import functions as F
-from pyspark.sql.window import Window
-from pymongo import MongoClient
-import logging
-
-# Initialize Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-logger = logging.getLogger(__name__)
 
 def main():
     logger.info("Starting Content-Based Recommendation System Pipeline")

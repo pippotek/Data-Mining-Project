@@ -330,9 +330,6 @@ def write_partition(partition):
             logger.error(f"Failed to insert final batch: {e}", exc_info=True)
 
 
-from pyspark.sql import DataFrame
-import pyspark.sql.functions as F
-from pymongo import MongoClient
 
 def write_user_recommendations(user_id: str, recommendations_df: DataFrame):
     """
