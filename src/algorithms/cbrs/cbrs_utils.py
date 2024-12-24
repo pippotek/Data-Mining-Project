@@ -17,6 +17,11 @@ import pyspark.sql.functions as F
 from pymongo.errors import BulkWriteError
 from pyspark.sql.functions import col, explode, split, when, lit, row_number, desc
 
+from pyspark.ml.feature import BucketedRandomProjectionLSH, Normalizer
+from pyspark.ml.linalg import Vectors, VectorUDT
+from pyspark.sql.functions import row_number
+from pyspark.sql.window import Window
+
 
 def load_data(
     spark: SparkSession, 
@@ -214,34 +219,14 @@ def evaluate_recommendations(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-####################### APROXIMATE NN ####################### 
-
-
-from pyspark.ml.feature import BucketedRandomProjectionLSH, Normalizer
-from pyspark.ml.linalg import Vectors, VectorUDT
-from pyspark.sql.functions import row_number
-from pyspark.sql.window import Window
-
-
 def vectorize_arrays(df: DataFrame, array_col: str, vector_col: str) -> DataFrame:
     """
     Convert an array<double> column into a Spark ML Vector column.
     """
     to_vector_udf = F.udf(lambda arr: Vectors.dense(arr) if arr else None, VectorUDT())
     return df.withColumn(vector_col, to_vector_udf(F.col(array_col)))
+
+
 
 def compute_recommendations_ann(
     user_profiles_df: DataFrame,
@@ -344,3 +329,47 @@ def write_partition(partition):
         except Exception as e:
             logger.error(f"Failed to insert final batch: {e}", exc_info=True)
 
+
+from pyspark.sql import DataFrame
+import pyspark.sql.functions as F
+from pymongo import MongoClient
+
+def write_user_recommendations(user_id: str, recommendations_df: DataFrame):
+    """
+    Write the recommendations for a single user to MongoDB using PySpark or PyMongo.
+    """
+    # Filter for this user
+    user_df = recommendations_df.filter(F.col("user_id") == user_id)
+
+    # If no rows for this user, skip
+    if user_df.count() == 0:
+        return
+
+    # Approach A: Use `collect()` + PyMongo for a small user subset
+    rows = user_df.collect()  # This is safe if each user’s subset is not huge
+    docs = [row.asDict() for row in rows]
+
+    client = MongoClient("mongodb://root:example@mongodb:27017/admin")
+    db = client["mind_news"]
+    collection = db["cbrs_recommendations"]
+    try:
+        # Insert all docs at once or chunk them if needed
+        collection.insert_many(docs, ordered=False)
+        logger.info(f"Wrote {len(docs)} recommendations for user {user_id}")
+    except Exception as e:
+        logger.error(f"Failed to write user {user_id}: {e}", exc_info=True)
+
+def partition_by_users(recommendations_df: DataFrame, user_limit: int = 1000):
+    """
+    Retrieve distinct user IDs and process each user in a loop,
+    writing their subset of recommendations separately.
+    """
+    distinct_users_df = recommendations_df.select("user_id").distinct()
+
+    # Optionally limit how many users we process if needed for testing
+    user_ids = [row["user_id"] for row in distinct_users_df.limit(user_limit).collect()]
+
+    logger.info(f"Processing up to {len(user_ids)} users...")
+
+    for uid in user_ids:
+        write_user_recommendations(uid, recommendations_df)

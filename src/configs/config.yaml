@@ -29,6 +29,6 @@ EVAL_CONFIG : {
 
 services: 
   als:
-    enabled : true
+    enabled : false
   cbrs:
     enabled : true
