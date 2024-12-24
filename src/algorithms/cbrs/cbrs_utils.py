@@ -218,14 +218,12 @@ def evaluate_recommendations(
     return metrics
 
 
-
 def vectorize_arrays(df: DataFrame, array_col: str, vector_col: str) -> DataFrame:
     """
     Convert an array<double> column into a Spark ML Vector column.
     """
     to_vector_udf = F.udf(lambda arr: Vectors.dense(arr) if arr else None, VectorUDT())
     return df.withColumn(vector_col, to_vector_udf(F.col(array_col)))
-
 
 
 def compute_recommendations_ann(
@@ -256,21 +254,12 @@ def compute_recommendations_ann(
     news_normalizer = Normalizer(inputCol="news_vec", outputCol="normalized_vec", p=2.0)
     news_embeddings_norm = news_normalizer.transform(news_embeddings_vec)
 
-
-
-    logger.info("Schema of user_profiles_norm:")
-    user_profiles_norm.printSchema()
-
-    logger.info("Schema of news_embeddings_norm:")
-    news_embeddings_norm.printSchema()
-    
-    
     # 3) Create an LSH model for approximate nearest neighbors
     brp = BucketedRandomProjectionLSH(
         inputCol="normalized_vec",
         outputCol="hashes",
-        bucketLength=15.0,      # Increased to reduce number of buckets
-        numHashTables=2          # Reduced from 3
+        bucketLength=10.0,      # Tuning parameter
+        numHashTables=3          # Tuning parameter
     )
     
     # 4) Fit the LSH model on the users
@@ -291,82 +280,14 @@ def compute_recommendations_ann(
         F.col("distCol")
     )
 
+    # 7) Rank results by ascending distance (the smaller the distance, the better)
     window = Window.partitionBy("user_id").orderBy(F.asc("distCol"))
     ranked = joined.withColumn("rank", row_number().over(window))
-    
-    # Filter top_k
+
+    # 8) Filter to top_k
     top_k_df = ranked.filter(F.col("rank") <= top_k)
-    
-    # Add similarity_score
+
+    # 9) Compute a similarity score if desired
     top_k_df = top_k_df.withColumn("similarity_score", 1 / (1 + F.col("distCol")))
-    
-    # Return the DataFrame with similarity_score
+
     return top_k_df
-
-
-
-def write_partition(partition):
-    if not partition:
-        return
-    client = MongoClient("mongodb://root:example@mongodb:27017/admin")
-    db = client["mind_news"]
-    collection = db["cbrs_recommendations"]
-    batch = []
-    for row in partition:
-        record = row.asDict()
-        batch.append(record)
-        if len(batch) == 1000:
-            try:
-                collection.insert_many(batch, ordered=False)
-                logger.info(f"Inserted batch of 1000 records.")
-                batch = []
-            except Exception as e:
-                logger.error(f"Failed to insert batch: {e}", exc_info=True)
-    if batch:
-        try:
-            collection.insert_many(batch, ordered=False)
-            logger.info(f"Inserted final batch of {len(batch)} records.")
-        except Exception as e:
-            logger.error(f"Failed to insert final batch: {e}", exc_info=True)
-
-
-
-def write_user_recommendations(user_id: str, recommendations_df: DataFrame):
-    """
-    Write the recommendations for a single user to MongoDB using PySpark or PyMongo.
-    """
-    # Filter for this user
-    user_df = recommendations_df.filter(F.col("user_id") == user_id)
-
-    # If no rows for this user, skip
-    if user_df.count() == 0:
-        return
-
-    # Approach A: Use `collect()` + PyMongo for a small user subset
-    rows = user_df.collect()  # This is safe if each user’s subset is not huge
-    docs = [row.asDict() for row in rows]
-
-    client = MongoClient("mongodb://root:example@mongodb:27017/admin")
-    db = client["mind_news"]
-    collection = db["cbrs_recommendations"]
-    try:
-        # Insert all docs at once or chunk them if needed
-        collection.insert_many(docs, ordered=False)
-        logger.info(f"Wrote {len(docs)} recommendations for user {user_id}")
-    except Exception as e:
-        logger.error(f"Failed to write user {user_id}: {e}", exc_info=True)
-
-def partition_by_users(recommendations_df: DataFrame, user_limit: int = 1000):
-    """
-    Retrieve distinct user IDs and process each user in a loop,
-    writing their subset of recommendations separately.
-    """
-    distinct_users_df = recommendations_df.select("user_id").distinct()
-
-    # Optionally limit how many users we process if needed for testing
-    user_ids = [row["user_id"] for row in distinct_users_df.limit(user_limit).collect()]
-
-    logger.info(f"Processing up to {len(user_ids)} users...")
-
-    for uid in user_ids:
-        write_user_recommendations(uid, recommendations_df)

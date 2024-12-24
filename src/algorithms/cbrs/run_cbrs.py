@@ -14,6 +14,7 @@ from pyspark.storagelevel import StorageLevel
 from pyspark.ml.linalg import VectorUDT
 from src.utilities.data_utils import fetch_data_from_mongo
 import pyspark.sql.functions as F
+from pyspark.ml.feature import PCA
 from pyspark.sql.functions import (
     avg,
     broadcast,
@@ -53,24 +54,18 @@ def main():
 
         # Initialize Spark Session with Optimized Configurations
         spark = (SparkSession.builder
-                 .appName("ContentBasedRecSys")
-                 .master("local[*]")  # Adjust based on your cluster
-                 .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                 .config("spark.kryoserializer.buffer.max", "1g")
-                 .config("spark.sql.shuffle.partitions", "200")  # Adjust based on your data size
-                 .config("spark.driver.memory", "16g")           # Increased based on available resources
-                 .config("spark.executor.memory", "16g")         # Increased based on available resources
-                 .config("spark.driver.maxResultSize", "4g")     # Prevent driver crashes due to large results
-                 .config("spark.memory.fraction", "0.8")
-                 .config("spark.memory.storageFraction", "0.3")
-                 .config("spark.jars.packages",
-                         "com.johnsnowlabs.nlp:spark-nlp_2.12:5.5.1,"
-                         "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0")
-                 .config("spark.mongodb.read.connection.uri", MONGO_URI)
-                 .config("spark.mongodb.write.connection.uri", MONGO_URI)
-                 .config("spark.mongodb.output.writeConcern.w", "1")
-                 .getOrCreate())
-
+                .appName("Combine News and Generate Embeddings")
+                .master("local[*]")
+                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+                .config("spark.kryoserializer.buffer.max", "2000M")
+                .config("spark.driver.maxResultSize", "0")
+                .config("spark.jars.packages",
+                        "com.johnsnowlabs.nlp:spark-nlp_2.12:5.5.1,"
+                        "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0")
+                .config("spark.mongodb.read.connection.uri", MONGO_URI)
+                .config("spark.mongodb.write.connection.uri", MONGO_URI)
+                .config("spark.mongodb.output.writeConcern.w", "1")
+                .getOrCreate())
         logger.info("Spark Session initialized.")
         
         # If you have a main_embedding function, ensure it's correctly defined and called
@@ -98,50 +93,54 @@ def main():
 
         # Create User Profiles
         user_profiles_df = create_user_profiles_with_pandas_udaf(behaviors_train_df, news_embeddings_df)
-        user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
+        # user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
         # Optional: Preview Data
         # user_profiles_df.show(2, truncate=True)
         logger.info("User profiles created and persisted.")
 
-        # Verify User Profiles Data
-        user_count = user_profiles_df.count()
-        logger.info(f"Number of user profiles: {user_count}")
+        # Compute Recommendations using ANN
+        top_k = 10  # Set your desired top_k
+        recommendations_df = compute_recommendations_ann(
+            user_profiles_df,
+            news_embeddings_df,
+            top_k=top_k
+        )
+        recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
+        logger.info("Recommendations computed and persisted.")
 
-        if user_count == 0:
-            logger.warning("No user profiles available for recommendation. Skipping recommendation step.")
-            recommendations_df = spark.createDataFrame([], schema=user_profiles_df.schema)  # Empty DataFrame
-        else:
-            # Compute Recommendations using Approximate Nearest Neighbors (LSH)
-            top_k = 5  # Set your desired top_k value
-            recommendations_df = compute_recommendations_ann(
-                user_profiles_df=user_profiles_df,
-                news_embeddings_df=news_embeddings_df,
-                top_k=top_k
-            )
-            recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
-            logger.info("Recommendations computed.")
-            recommendations_df.printSchema()
-            # Optional: Preview Data
-            # recommendations_df.show(5, truncate=False)
+        ###############################################################
+        # Handle Duplicate '_id' Columns if Any
+        if "_id" in recommendations_df.columns:
+            # It's common for MongoDB to add an '_id' field. If it already exists in data, consider renaming or dropping.
+            recommendations_df = recommendations_df.drop("_id")
+            logger.info("Duplicate '_id' column dropped.")
 
-        # Write Recommendations to MongoDB in a Hybrid Approach (Partition by User ID)
-        if user_count > 0:
-            # Extract distinct user IDs
-            distinct_users_df = recommendations_df.select("user_id").distinct()
-            user_ids = [row["user_id"] for row in distinct_users_df.collect()]
-            total_users = len(user_ids)
-            logger.info(f"Total distinct users to process: {total_users}")
+        # Select Relevant Columns
+        filtered_recommendations_df = recommendations_df.select(
+            "user_id", "news_id", "similarity_score", "rank"
+        )
 
-            for idx, uid in enumerate(user_ids, start=1):
-                write_user_recommendations(uid, recommendations_df)
-                if idx % 1000 == 0:
-                    logger.info(f"Processed {idx} out of {total_users} users.")
-        else:
-            logger.info("No recommendations to write to MongoDB.")
+        ###############################################################
+        # Optimize Number of Partitions Before Writing
+        # Reduce the number of partitions to avoid overwhelming MongoDB
+        #optimized_recommendations_df = filtered_recommendations_df.coalesce(50)  # Adjust based on your cluster and MongoDB capacity
+        # logger.info("DataFrame repartitioned to 50 partitions for optimized writing.")
+
+        ###############################################################
+        
+        (recommendations_df
+            .write
+            .format("mongodb")
+            .mode("append")
+            .option("database", DATABASE_NAME)
+            .option("collection", RECOMMENDATIONS_COLLECTION)
+            .option("spark.mongodb.output.batchSize", "1000")  # Adjust batch size as needed
+            .save())
 
         # Optional: Evaluate Recommendations
-        # metrics = evaluate_recommendations(recommendations_df, behaviors_test_df)
-        # logger.info(f"Evaluation Metrics: {metrics}")
+        # Uncomment the following lines if you wish to evaluate
+        #metrics = evaluate_recommendations(recommendations_df, behaviors_test_df)
+        #logger.info(f"Evaluation Metrics: {metrics}")
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
