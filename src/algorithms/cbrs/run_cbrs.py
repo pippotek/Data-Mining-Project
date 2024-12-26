@@ -63,7 +63,7 @@ def main():
         # news_embeddings_df.show(2, truncate=True)
 
         # Create User Profiles
-        user_profiles_df = create_user_profiles(behaviors_train_df, news_embeddings_df)
+        user_profiles_df = create_user_profiles_with_pandas_udaf(behaviors_train_df, news_embeddings_df)
         # user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
         # Optional: Preview Data
         # user_profiles_df.show(2, truncate=True)
