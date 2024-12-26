@@ -96,10 +96,10 @@ def main():
         # user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
         # Optional: Preview Data
         # user_profiles_df.show(2, truncate=True)
-        logger.info("User profiles created and persisted.")
+        logger.info("User profiles created")
 
         # Compute Recommendations using ANN
-        top_k = 10  # Set your desired top_k
+        top_k = 3  # Set your desired top_k
         recommendations_df = compute_recommendations_ann(
             user_profiles_df,
             news_embeddings_df,
