@@ -4,6 +4,7 @@ from src.utilities.logger import get_logger
 from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data
 from pyspark.sql import SparkSession
 from src.configs.setup import load_config
+import time
 
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
@@ -60,6 +61,7 @@ if __name__ == "__main__":
             model_save_path = config['ALS_CONFIG']["model_save_path"]
             logger.info(f"Starting ALS training with data source: {data_source}")
             train_als_model(training_data, validation_data, model_save_path)
+        
 
         except Exception as e:
             logger.error(f"An error occurred during training: {e}")

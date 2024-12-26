@@ -1,4 +1,4 @@
-wandb_key : "YOUR_KEY_HERE"
+wandb_key : "a967166cb6f5f15eefe606cee45c0b6a185c2174"
 
 # ALS model hyperparameters and configuration settings
 ALS_CONFIG : {
@@ -31,4 +31,4 @@ services:
   als:
     enabled : true
   cbrs:
-    enabled : true
+    enabled : false

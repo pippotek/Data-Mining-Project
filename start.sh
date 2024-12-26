@@ -39,4 +39,4 @@ done
 
 # Spin up Docker Compose with the exclusion arguments
 echo "Starting Docker Compose, excluding the following services: ${EXCLUDED_SERVICES[*]}"
-docker compose up -d "${EXCLUDE_ARGS[@]}"
+docker compose up --build -d "${EXCLUDE_ARGS[@]}"

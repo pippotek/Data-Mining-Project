@@ -3,6 +3,7 @@ from src.algorithms.als.als_utils import create_als_model, save_model, make_pred
 from src.training.evaluation_metrics import compute_regression_metrics, compute_ranking_metrics
 from src.utilities.logger import get_logger
 from src.configs.setup import load_config
+import time
 #from recommenders.datasets.mind import download_mind, extract_mind
 
 
@@ -55,6 +56,6 @@ def train_als_model(training_data, validation_data, model_save_path):
     save_model(model, config['ALS_CONFIG']["model_save_path"])
     
     logger.info(f"ALS model saved successfully to {model_save_path}.")
-
+    time.sleep(100000)
     wandb.finish()
     logger.info("Training process completed and WandB session closed.")

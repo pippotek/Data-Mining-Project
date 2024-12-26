@@ -4,13 +4,14 @@
 import pyspark.sql.functions as F
 from pyspark.ml.evaluation import RegressionEvaluator
 from recommenders.evaluation.spark_evaluation import SparkRankingEvaluation
-from src.algorithms.als.als_configs import EVAL_CONFIG
+from src.configs.setup import load_config
 
 
+config = load_config('src/configs/config.yaml')
 # Compute ranking-based metrics for the ALS model.
 def compute_ranking_metrics(predictions, top_k=None):
     if top_k is None:
-        top_k = EVAL_CONFIG["k"]
+        top_k = config['EVAL_CONFIG']["k"]
 
     prediction_and_labels = predictions \
         .groupBy("userId") \

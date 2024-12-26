@@ -1,19 +1,21 @@
 import os
 from pyspark.ml.recommendation import ALS
 from pyspark.ml.recommendation import ALSModel
-from src.algorithms.als.als_configs import ALS_CONFIG
+from src.configs.setup import load_config
+
+config = load_config('src/configs/config.yaml')
 
 def create_als_model():
     als = ALS(
-        rank=ALS_CONFIG["rank"],
-        maxIter=ALS_CONFIG["max_iter"],
-        regParam=ALS_CONFIG["reg_param"],
-        implicitPrefs=ALS_CONFIG["implicit_prefs"],
-        alpha=ALS_CONFIG["alpha"],
+        rank=config['ALS_CONFIG']["rank"],
+        maxIter=config['ALS_CONFIG']["max_iter"],
+        regParam=config['ALS_CONFIG']["reg_param"],
+        implicitPrefs=config['ALS_CONFIG']["implicit_prefs"],
+        alpha=config['ALS_CONFIG']["alpha"],
         userCol="userId", 
         itemCol="newsId", 
         ratingCol="clicked",
-        coldStartStrategy=ALS_CONFIG["cold_start_strategy"] 
+        coldStartStrategy=config['ALS_CONFIG']["cold_start_strategy"] 
     )
     return als
 
