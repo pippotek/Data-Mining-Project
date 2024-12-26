@@ -51,7 +51,6 @@ def preprocess_news_embeddings(news_embeddings_df: DataFrame) -> DataFrame:
 
 
 
-@pandas_udf(ArrayType(DoubleType()), PandasUDFType.GROUPED_AGG)
 def average_embeddings(embeddings_series: pd.Series) -> list:
     """
     Compute the element-wise average of a series of embeddings.

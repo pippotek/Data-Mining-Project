@@ -50,6 +50,7 @@ services:
     container_name: spark-cbrs
     ports:
       - "8890:8888"  # Expose Jupyter notebook for this container
+      - "4040:4040"  # Expose Spark UI
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3
@@ -57,6 +58,9 @@ services:
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=python3
       - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    volumes:
+      - spark-dependencies:/opt/spark/jars  # Volume to retain JAR dependencies
+      - ivy-cache:/root/.ivy2
     depends_on:
       - mongodb
 
@@ -85,4 +89,8 @@ services:
 
 volumes:
   mongo_data:
+    driver: local
+  spark-dependencies:
+    driver: local  # Define the volume for Spark JAR dependencies
+  ivy-cache:  # Explicitly define the Ivy cache volume
     driver: local

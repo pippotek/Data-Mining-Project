@@ -3,37 +3,9 @@ from src.utilities.data_utils import *
 from src.algorithms.cbrs.clean_embed import main_embedding
 from cbrs_utils import *
 import logging
-import pandas as pd
-import numpy as np
-
-from pymongo.errors import BulkWriteError
-from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.types import ArrayType, FloatType, DoubleType
-from pyspark.sql.window import Window
+from pyspark.sql import SparkSession
 from pyspark.storagelevel import StorageLevel
-from pyspark.ml.linalg import VectorUDT
-from src.utilities.data_utils import fetch_data_from_mongo
-import pyspark.sql.functions as F
-from pyspark.ml.feature import PCA
-from pyspark.sql.functions import (
-    avg,
-    broadcast,
-    col,
-    collect_list,
-    desc,
-    explode,
-    expr,
-    isnan,
-    lit,
-    pandas_udf,
-    PandasUDFType,
-    rank,
-    row_number,
-    split,
-    transform,
-    udf,
-    when
-)
+
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -54,11 +26,9 @@ def main():
 
         # Initialize Spark Session with Optimized Configurations
         spark = (SparkSession.builder
-                .appName("Combine News and Generate Embeddings")
-                .master("local[*]")
-                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("spark.kryoserializer.buffer.max", "2000M")
-                .config("spark.driver.maxResultSize", "0")
+                .appName("CBRS")
+                .config("spark.master", "local[*]")
+                .config("spark.ui.port", "4040")  
                 .config("spark.jars.packages",
                         "com.johnsnowlabs.nlp:spark-nlp_2.12:5.5.1,"
                         "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0")
@@ -86,13 +56,14 @@ def main():
         logger.info("Data loaded successfully.")
 
         # Preprocess News Embeddings
+        news_embeddings_df = news_embeddings_df.limit(100)
         news_embeddings_df = preprocess_news_embeddings(news_embeddings_df)
         logger.info("News embeddings preprocessed.")
         # Optional: Preview Data
         # news_embeddings_df.show(2, truncate=True)
 
         # Create User Profiles
-        user_profiles_df = create_user_profiles_with_pandas_udaf(behaviors_train_df, news_embeddings_df)
+        user_profiles_df = create_user_profiles(behaviors_train_df, news_embeddings_df)
         # user_profiles_df = user_profiles_df.persist(StorageLevel.MEMORY_AND_DISK)
         # Optional: Preview Data
         # user_profiles_df.show(2, truncate=True)
@@ -105,6 +76,7 @@ def main():
             news_embeddings_df,
             top_k=top_k
         )
+        recommendations_df = recommendations_df.coalesce(20)  # Adjust based on your resources
         recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
         logger.info("Recommendations computed and persisted.")
 
@@ -134,7 +106,7 @@ def main():
             .mode("append")
             .option("database", DATABASE_NAME)
             .option("collection", RECOMMENDATIONS_COLLECTION)
-            .option("spark.mongodb.output.batchSize", "1000")  # Adjust batch size as needed
+            .option("spark.mongodb.output.batchSize", "100")  # Adjust batch size as needed
             .save())
 
         # Optional: Evaluate Recommendations
