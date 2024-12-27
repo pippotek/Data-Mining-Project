@@ -1,0 +1,4 @@
+2024-12-18 17:13:01,085 - DataUtils - INFO - Resolving paths for the demo MIND dataset...
+2024-12-18 17:13:01,087 - DataUtils - INFO - Dataset located. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-18 17:13:01,087 - DataUtils - INFO - Starting to preprocess MIND dataset. Train: ./MINDdemo_train.zip/data/mind/train/behaviors.tsv, Valid: ./MINDdemo_train.zip/data/mind/valid/behaviors.tsv
+2024-12-18 17:13:13,554 - DataUtils - INFO - Preprocessing of MIND dataset completed.

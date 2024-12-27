@@ -1,0 +1,43 @@
+{
+  "os": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "python": "3.10.12",
+  "startedAt": "2024-12-10T17:10:26.524753Z",
+  "args": [
+    "--config",
+    "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project/config.yaml"
+  ],
+  "program": "-m src.scripts.run_train_als",
+  "git": {
+    "remote": "https://github.com/pippotek/Data-Mining-Project",
+    "commit": "74cce2ed3a0f183c009256029957c5e216265700"
+  },
+  "root": "/home/joaquin_l_calvo/Trento/Data_Mining/Data-Mining-Project",
+  "host": "DESKTOP-LQJ6T08",
+  "username": "joaquin_l_calvo",
+  "executable": "/home/joaquin_l_calvo/.virtualenvs/data_mining/bin/python",
+  "cpu_count": 8,
+  "cpu_count_logical": 16,
+  "gpu": "NVIDIA T550 Laptop GPU",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "1081101176832",
+      "used": "9427660800"
+    }
+  },
+  "memory": {
+    "total": "16370712576"
+  },
+  "cpu": {
+    "count": 8,
+    "countLogical": 16
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA T550 Laptop GPU",
+      "memoryTotal": "4294967296",
+      "architecture": "Turing"
+    }
+  ],
+  "cudaVersion": "12.2"
+}

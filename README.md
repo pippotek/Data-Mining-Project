@@ -5,6 +5,8 @@ To run the app:
 ```
 docker-compose build
 docker-compose up -d
+chmod +x start.sh
+./start.sh
 ```
 
 Wait for the data to populate the db.
