@@ -1,9 +1,11 @@
-wandb_key : a967166cb6f5f15eefe606cee45c0b6a185c2174"
+wandb_key : "a967166cb6f5f15eefe606cee45c0b6a185c2174"
 
 # ALS model hyperparameters and configuration settings
+# ALS hyperparameters were selected through Cross-Validation in ..src/tests/als/ALS_hyperparam_optimization.ipynb
+
 ALS_CONFIG : {
-    "rank": 5, #10,               # Number of latent factors
-    "max_iter": 5, #20,           # Number of iterations to run the optimization
+    "rank": 40,               # Number of latent factors
+    "max_iter": 15,           # Number of iterations to run the optimization
     "reg_param": 0.1,         # Regularization parameter
     "implicit_prefs": True,   # If True, ALS will use implicit feedback
     "alpha": 1.0,             # Confidence parameter (only relevant if implicit_prefs=True)
