@@ -33,4 +33,6 @@ services:
   als:
     enabled : false
   cbrs:
-    enabled : true
+    enabled : false
+  clustering:
+    enabled: true
