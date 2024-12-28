@@ -4,7 +4,6 @@ from src.algorithms.cbrs.clean_embed import main_embedding
 from cbrs_utils import *
 import logging
 from pyspark.sql import SparkSession
-from pyspark.storagelevel import StorageLevel
 
 
 
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 def main():
 
     # MongoDB Configuration
-    MONGO_URI = "mongodb://root:example@mongodb:27017/admin"
+    MONGO_URI = "mongodb://root:example@mongodb:27017"
     DATABASE_NAME = "mind_news"
     news_embeddings_collection = "news_combined_embeddings"
     behaviors_train_collection = "behaviors_train"
