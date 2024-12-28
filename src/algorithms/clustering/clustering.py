@@ -4,287 +4,502 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import ArrayType, FloatType
 from pyspark.ml.linalg import Vectors, VectorUDT
-from pyspark.ml.feature import PCA
+# from pyspark.ml.feature import PCA
 from pyspark.ml.clustering import KMeans
 from pyspark.sql import Row
-
+from sklearn.decomposition import PCA
+import pymongo
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
+import os
+from pymongo import MongoClient
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+import pandas as pd
+import seaborn as sns
 
-# ------------------------------------------------------------------------------
-# Logging Configuration
-# ------------------------------------------------------------------------------
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# ------------------------------------------------------------------------------
-# MongoDB Configuration
-# ------------------------------------------------------------------------------
-MONGO_URI = "mongodb://root:example@mongodb:27017/admin"  # Adjust as needed
-DATABASE_NAME = "mind_news"
-EMBEDDINGS_COLLECTION = "news_combined_embeddings"
-CLUSTERED_NEWS_COLLECTION = "clustered_news_big_data"  # New collection for cluster assignments
-
-# ------------------------------------------------------------------------------
-# 1. Initialize Spark
-# ------------------------------------------------------------------------------
-def initialize_spark():
+def load_data(mongo_uri, db_name, news_embeddings_collection, news_collections):
     """
-    Initialize a SparkSession with all necessary configurations.
+    Load data from MongoDB collections and remove duplicates based on 'news_id'.
+
+    Parameters:
+    - mongo_uri (str): MongoDB connection URI.
+    - db_name (str): MongoDB database name.
+    - news_embeddings_collection (str): Collection name for news embeddings.
+    - news_collections (list): List of collection names for news articles (e.g., ["news_train", "news_valid"]).
+
+    Returns:
+    - tuple: Lists of documents for news embeddings and deduplicated news articles.
     """
-    logger.info("Initializing SparkSession...")
-    spark = (
-        SparkSession.builder
-        .appName("HierarchicalClusteringBigData")
-        .master("local[*]")  # Adjust based on your cluster setup
-        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-        .config("spark.kryoserializer.buffer.max", "1g")
-        .config("spark.sql.shuffle.partitions", "400")
-        .config("spark.driver.maxResultSize", "8g")
-        .config("spark.memory.fraction", "0.8")
-        .config("spark.memory.storageFraction", "0.3")
-        .config(
-            "spark.jars.packages",
-            "com.johnsnowlabs.nlp:spark-nlp_2.12:5.5.1,"
-            "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0"
-        )
-        .config("spark.mongodb.read.connection.uri", MONGO_URI)
-        .config("spark.mongodb.write.connection.uri", MONGO_URI)
-        .config("spark.mongodb.output.writeConcern.w", "1")
-        .getOrCreate()
-    )
-    logger.info("SparkSession initialized.")
-    return spark
+    client = MongoClient(mongo_uri)
+    db = client[db_name]
+    
+    print(f"Fetching '{news_embeddings_collection}' collection...")
+    news_embeddings = list(db[news_embeddings_collection].find())
+    print(f"Fetched {len(news_embeddings)} documents from '{news_embeddings_collection}'.")
 
-# ------------------------------------------------------------------------------
-# 2. UDF to Parse Embedding String into Array[Float]
-# ------------------------------------------------------------------------------
-@F.udf(returnType=ArrayType(FloatType()))
-def to_float_array(embedding_str):
+    # Initialize an empty list to hold all news articles from specified collections
+    all_news = []
+    for collection_name in news_collections:
+        print(f"Fetching '{collection_name}' collection...")
+        collection_data = list(db[collection_name].find())
+        print(f"Fetched {len(collection_data)} documents from '{collection_name}'.")
+        all_news.extend(collection_data)
+    
+    print(f"Total news articles loaded (including duplicates): {len(all_news)}")
+
+    # Deduplicate articles based on 'news_id'
+    deduplicated_news = {}
+    for doc in all_news:
+        news_id = doc.get('news_id')
+        if news_id:
+            # Update the dictionary with the latest document for the given news_id
+            deduplicated_news[news_id] = doc
+    
+    deduplicated_list = list(deduplicated_news.values())
+    print(f"Total news articles after deduplication: {len(deduplicated_list)}")
+    
+    return news_embeddings, deduplicated_list
+
+
+
+
+def create_news_id_to_category_map(news):
     """
-    Parse a comma-separated string of floats into a Python list of floats.
+    Create a mapping from news_id to category.
+
+    Parameters:
+    - news (list): List of news documents.
+
+    Returns:
+    - dict: Mapping from news_id to category.
     """
-    if embedding_str is None:
-        return []
-    return [float(x) for x in embedding_str.split(",")]
+    news_id_to_category = {}
+    for doc in news:
+        news_id = doc.get('news_id')
+        category = doc.get('category', 'unknown')  # Default to 'unknown' if missing
+        if news_id:
+            news_id_to_category[news_id] = category
+        else:
+            print(f"Warning: Document with _id {doc.get('_id')} is missing 'news_id'.")
+    return news_id_to_category
 
-# ------------------------------------------------------------------------------
-# 3. Load & Parse Embeddings from MongoDB
-# ------------------------------------------------------------------------------
-def load_and_parse_embeddings(spark):
+
+def parse_embeddings(news_embeddings, news_id_to_category):
     """
-    Load embeddings from MongoDB, parse the embedding strings, and return a DataFrame.
+    Parse the embedding strings into NumPy arrays, along with news_id and category.
+
+    Parameters:
+    - news_embeddings (list): List of MongoDB documents with embedding strings.
+    - news_id_to_category (dict): Mapping from news_id to category.
+
+    Returns:
+    - tuple: (NumPy array of embeddings, list of document IDs, list of news IDs, list of categories)
     """
-    logger.info(f"Loading embeddings from MongoDB collection: {EMBEDDINGS_COLLECTION}")
-    df = (
-        spark.read.format("mongodb")
-        .option("uri", MONGO_URI)
-        .option("database", DATABASE_NAME)
-        .option("collection", EMBEDDINGS_COLLECTION)
-        .load()
-    )
-
-    # Convert the embedding_string to an array of floats
-    df = df.withColumn("features", to_float_array(F.col("embedding_string")))
-
-    # Select only the necessary fields
-    df = df.select("_id", "news_id", "features")
-    logger.info(f"Loaded {df.count()} documents from MongoDB.")
-    return df
-
-# ------------------------------------------------------------------------------
-# 4. Convert to Spark Vectors & (Optional) Dimensionality Reduction
-# ------------------------------------------------------------------------------
-def prepare_features_for_clustering(df, pca_k=0):
-    """
-    Convert 'features' (array<float>) into Spark Dense Vector and apply PCA for dimensionality reduction.
-    """
-    logger.info("Converting array<float> to Spark Vector for ML...")
-
-    # UDF to convert array<float> to Spark Vector
-    @F.udf(returnType=VectorUDT())
-    def array_to_vector(arr):
-        return Vectors.dense(arr)
-
-    df_vectors = df.withColumn("features_vector", array_to_vector(F.col("features")))
-
-    # Apply PCA if pca_k is specified
-    if pca_k and pca_k > 0:
-        logger.info(f"Reducing dimensions to {pca_k} using PCA...")
-        pca = PCA(k=pca_k, inputCol="features_vector", outputCol="pca_features")
-        pca_model = pca.fit(df_vectors)
-        df_vectors = pca_model.transform(df_vectors).select("_id", "news_id", F.col("pca_features").alias("final_features"))
-        logger.info("PCA dimensionality reduction completed.")
-    else:
-        df_vectors = df_vectors.select("_id", "news_id", F.col("features_vector").alias("final_features"))
-
-    return df_vectors
-
-# ------------------------------------------------------------------------------
-# 5. Stage 1 - K-Means Clustering (Spark) for Big Data
-# ------------------------------------------------------------------------------
-def kmeans_clustering(spark, df_vectors, k=500, max_iter=20):
-    """
-    Perform K-Means clustering using Spark ML on the dataset to generate k cluster centers.
-    """
-    logger.info(f"Running Spark K-Means with k={k}, max_iter={max_iter}...")
-    kmeans = KMeans(
-        k=k, 
-        maxIter=max_iter, 
-        featuresCol="final_features", 
-        predictionCol="kmeans_cluster"
-    )
-    model = kmeans.fit(df_vectors)
-    logger.info("K-Means clustering completed.")
-
-    # Assign each document to one of the k clusters
-    df_with_kmeans_labels = model.transform(df_vectors).select("_id", "news_id", "final_features", "kmeans_cluster")
-
-    # Collect cluster centers to driver
-    centers = model.clusterCenters()
-    # Convert Spark Vectors to NumPy arrays
-    centers_np = np.array([center.toArray() for center in centers])
-    logger.info(f"K-Means cluster centers shape: {centers_np.shape}")
-
-    return df_with_kmeans_labels, centers_np
-
-# ------------------------------------------------------------------------------
-# 6. Stage 2 - Hierarchical Clustering on K-Means Centers
-# ------------------------------------------------------------------------------
-def hierarchical_clustering_on_centers(centers_np, method='ward', threshold=5.0):
-    """
-    Perform hierarchical clustering on the K-Means cluster centers.
-    """
-    logger.info(f"Performing hierarchical clustering on {centers_np.shape[0]} centers using method='{method}' and threshold={threshold}...")
-    linkage_matrix = linkage(centers_np, method=method)
-    cluster_labels = fcluster(linkage_matrix, t=threshold, criterion='distance')
-    logger.info("Hierarchical clustering on centers completed.")
-    return cluster_labels, linkage_matrix
-
-# ------------------------------------------------------------------------------
-# 7. Stage 3 - Assign Each Data Point to Hierarchical Cluster
-# ------------------------------------------------------------------------------
-def map_points_to_hierarchical_clusters(spark, df_with_kmeans_labels, cluster_labels):
-    """
-    Map each news article to its hierarchical cluster based on K-Means cluster assignment.
-    """
-    logger.info("Mapping each K-Means cluster to its hierarchical cluster...")
-
-    # Create a mapping DataFrame from K-Means cluster index to hierarchical cluster label
-    kmeans_to_hier = [
-        Row(kmeans_cluster=i, cluster=int(cluster_labels[i])) 
-        for i in range(len(cluster_labels))
-    ]
-    lookup_df = spark.createDataFrame(kmeans_to_hier)
-
-    # Join the hierarchical cluster labels with the original DataFrame
-    df_final = (
-        df_with_kmeans_labels.alias("df")
-        .join(lookup_df.alias("lk"), F.col("df.kmeans_cluster") == F.col("lk.kmeans_cluster"), "inner")
-        .select(
-            F.col("df.news_id").alias("news_id"),
-            F.col("lk.cluster").alias("cluster")
-        )
-    )
-    logger.info("Mapping completed.")
-
-    return df_final
-
-# ------------------------------------------------------------------------------
-# 8. Save Final Clusters to MongoDB
-# ------------------------------------------------------------------------------
-def save_clusters_to_mongodb(df_final):
-    """
-    Save the final hierarchical cluster assignments to MongoDB.
-    Each document will contain 'news_id' and 'cluster'.
-    """
-    logger.info(f"Saving final cluster assignments to MongoDB collection: {CLUSTERED_NEWS_COLLECTION}...")
-
-    (
-        df_final.write.format("mongodb")
-        .mode("overwrite")  
-        .option("uri", MONGO_URI)
-        .option("database", DATABASE_NAME)
-        .option("collection", CLUSTERED_NEWS_COLLECTION)
-        .save()
-    )
-    logger.info("Final cluster assignments saved successfully.")
-
-# ------------------------------------------------------------------------------
-# 9. (Optional) Evaluate & Visualize Clusters
-# ------------------------------------------------------------------------------
-def evaluate_clusters(centers_np, cluster_labels, linkage_matrix):
-    """
-    Evaluate the hierarchical clustering with Silhouette Score and save dendrogram plot.
-    """
-    from sklearn.metrics import silhouette_score
-
-    logger.info("Evaluating hierarchical clustering of cluster centers...")
-    if len(set(cluster_labels)) > 1:  # Silhouette Score requires at least 2 clusters
-        sil_score = silhouette_score(centers_np, cluster_labels)
-        logger.info(f"Silhouette Score (cluster centers): {sil_score}")
-    else:
-        logger.info("Only one cluster found - silhouette score not applicable.")
-
-    # Plot dendrogram and save to file
-    logger.info("Plotting dendrogram of cluster centers...")
-    plt.figure(figsize=(10, 7))
-    dendrogram(linkage_matrix, truncate_mode="lastp", p=30)  # Adjust 'p' as needed
-    plt.title("Hierarchical Clustering Dendrogram (K-Means Centers)")
-    plt.xlabel("Cluster Index or (Cluster Size)")
-    plt.ylabel("Distance")
-    plt.savefig("dendrogram_centers.png")
-    plt.close()
-    logger.info("Dendrogram of cluster centers saved as 'dendrogram_centers.png'.")
-
-# ------------------------------------------------------------------------------
-# Main Pipeline
-# ------------------------------------------------------------------------------
-def main():
-    try:
-        # 1. Initialize Spark
-        spark = initialize_spark()
-
-        # 2. Load & parse embeddings from MongoDB
-        df = load_and_parse_embeddings(spark)
-
-        # 3. Prepare features: vectorize and reduce dimensions (PCA)
-        df_vectors = prepare_features_for_clustering(df, pca_k=50)
-
-        # 4. Stage 1 - K-Means Clustering in Spark
-        k = 500  # Adjust based on your dataset size and desired granularity
-        df_kmeans, centers_np = kmeans_clustering(spark, df_vectors, k=k, max_iter=20)
-
-        # 5. Stage 2 - Hierarchical Clustering on K-Means centers
-        threshold = 5.0  # Adjust based on desired cluster granularity
-        cluster_labels, linkage_matrix = hierarchical_clustering_on_centers(
-            centers_np, method='ward', threshold=threshold
-        )
-
-        # 6. Stage 3 - Map each row to the final hierarchical cluster
-        df_final = map_points_to_hierarchical_clusters(spark, df_kmeans, cluster_labels)
-
-        # 7. Save final cluster assignments to MongoDB
-        save_clusters_to_mongodb(df_final)
-
-        # 8. (Optional) Evaluate & visualize the hierarchical clustering of centers
-        evaluate_clusters(centers_np, cluster_labels, linkage_matrix)
-
-        logger.info("Hierarchical clustering (big data) pipeline completed successfully.")
-
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        sys.exit(1)
-    finally:
+    embeddings = []
+    doc_ids = []
+    news_ids = []
+    categories = []
+    
+    for doc in news_embeddings:
+        embedding_string = doc.get('embedding_string', '')
+        if not embedding_string:
+            print(f"Warning: Document with _id {doc.get('_id')} has empty 'embedding_string'. Skipping.")
+            continue
         try:
-            spark.stop()
-            logger.info("SparkSession stopped.")
-        except:
-            pass
+            embedding = np.array([float(x) for x in embedding_string.split(',')])
+        except ValueError as ve:
+            print(f"Error parsing embedding for document _id {doc.get('_id')}: {ve}. Skipping.")
+            continue
+        embeddings.append(embedding)
+        doc_ids.append(doc['_id'])
+        news_id = doc.get('news_id', 'unknown')
+        news_ids.append(news_id)
+        category = news_id_to_category.get(news_id, 'unknown')
+        categories.append(category)
+    
+    return np.array(embeddings), doc_ids, news_ids, categories
 
-# ------------------------------------------------------------------------------
-# Entry Point
-# ------------------------------------------------------------------------------
+
+def perform_pca(embeddings, n_components):
+    """
+    Perform Principal Component Analysis (PCA) on the embeddings.
+
+    Parameters:
+    - embeddings (np.array): Array of embeddings.
+    - n_components (int): Number of principal components.
+
+    Returns:
+    - np.array: PCA-transformed embeddings.
+    - PCA: Fitted PCA model.
+    """
+    print(f"Performing PCA to reduce dimensionality to {n_components} components...")
+    pca = PCA(n_components=n_components, random_state=42)
+    reduced_embeddings = pca.fit_transform(embeddings)
+    print(f"PCA completed. Reduced embeddings shape: {reduced_embeddings.shape}")
+    return reduced_embeddings, pca
+
+
+def perform_kmeans(reduced_embeddings, n_clusters):
+    """
+    Perform K-Means clustering on the reduced embeddings.
+
+    Parameters:
+    - reduced_embeddings (np.array): PCA-transformed embeddings.
+    - n_clusters (int): Number of clusters.
+
+    Returns:
+    - np.array: Cluster labels for each data point.
+    - KMeans: Fitted KMeans model.
+    """
+    print(f"Clustering data into {n_clusters} clusters using K-Means...")
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    cluster_labels = kmeans.fit_predict(reduced_embeddings)
+    print(f"K-Means clustering completed. Found clusters: {np.unique(cluster_labels)}")
+    return cluster_labels, kmeans
+
+
+def save_results(mongo_uri, db_name, output_collection, doc_ids, cluster_labels, news_ids, categories, pca_embeddings):
+    """
+    Save clustering results back to MongoDB with additional fields (news_id, category, cluster, and PCA embedding).
+
+    Parameters:
+    - mongo_uri (str): MongoDB connection URI.
+    - db_name (str): MongoDB database name.
+    - output_collection (str): Collection name for saving results.
+    - doc_ids (list): List of document IDs corresponding to the embeddings.
+    - cluster_labels (np.array): Cluster labels for each document.
+    - news_ids (list): List of news IDs corresponding to the embeddings.
+    - categories (list): List of categories for the embeddings.
+    - pca_embeddings (np.array): PCA-transformed embeddings for each document.
+
+    Returns:
+    - None
+    """
+    from pymongo import MongoClient, UpdateOne
+    
+    client = MongoClient(mongo_uri)
+    db = client[db_name]
+    output_col = db[output_collection]
+
+    results = []
+    for doc_id, news_id, category, cluster, pca_embedding in zip(doc_ids, news_ids, categories, cluster_labels, pca_embeddings):
+        result = {
+            "_id": doc_id,
+            "news_id": news_id,
+            "category": category,
+            "cluster": int(cluster),
+            "pca_embedding": pca_embedding.tolist()  # Convert NumPy array to list for MongoDB compatibility
+        }
+        results.append(result)
+
+    if results:
+        print(f"Inserting/updating {len(results)} documents into '{output_collection}' collection...")
+        # Bulk upsert operations for efficiency
+        operations = [
+            UpdateOne(
+                {"_id": result["_id"]},
+                {"$set": result},
+                upsert=True
+            )
+            for result in results
+        ]
+        if operations:
+            result_bulk = output_col.bulk_write(operations, ordered=False)
+            print(f"Bulk write completed: {result_bulk.bulk_api_result}")
+    else:
+        print("No results to save.")
+
+    
+
+def visualize_clusters_tsne(reduced_embeddings, cluster_labels, save_path="src/outputs/clusters_visualization.png"):
+    """
+    Visualize clusters using t-SNE for dimensionality reduction and Matplotlib for plotting.
+
+    Parameters:
+    - reduced_embeddings (np.array): PCA-transformed embeddings.
+    - cluster_labels (np.array): Cluster labels from K-Means.
+    - save_path (str): Path to save the plot.
+
+    Returns:
+    - None
+    """
+    print("Reducing dimensions to 2D using t-SNE for visualization...")
+    tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_jobs=-1)
+    embeddings_2d = tsne.fit_transform(reduced_embeddings)
+    print("t-SNE dimensionality reduction completed.")
+
+    print("Plotting clusters...")
+    plt.figure(figsize=(12, 10))
+    unique_clusters = np.unique(cluster_labels)
+    for cluster in unique_clusters:
+        indices = np.where(cluster_labels == cluster)
+        plt.scatter(
+            embeddings_2d[indices, 0],
+            embeddings_2d[indices, 1],
+            label=f"Cluster {cluster}",
+            alpha=0.6,
+            s=10  # Adjust point size as needed
+        )
+    plt.title("Cluster Visualization with t-SNE")
+    plt.xlabel("t-SNE Dimension 1")
+    plt.ylabel("t-SNE Dimension 2")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    
+    # Ensure the output directory exists
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    
+    plt.savefig(save_path, dpi=300)
+    plt.close()
+    print(f"Cluster visualization saved to '{save_path}'.")
+
+
+
+
+def visualize_with_pca(reduced_embeddings, cluster_labels, save_path="src/outputs/clusters_visualization.png"):
+    print("Using PCA for 2D visualization...")
+    embeddings_2d = reduced_embeddings[:, :2]  # Use the first two PCA components
+
+    print("Plotting clusters...")
+    plt.figure(figsize=(10, 8))
+    unique_clusters = np.unique(cluster_labels)
+    for cluster in unique_clusters:
+        indices = np.where(cluster_labels == cluster)
+        plt.scatter(
+            embeddings_2d[indices, 0],
+            embeddings_2d[indices, 1],
+            label=f"Cluster {cluster}",
+            alpha=0.6
+        )
+    plt.title("Cluster Visualization (PCA)")
+    plt.xlabel("PCA Dimension 1")
+    plt.ylabel("PCA Dimension 2")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(save_path)
+    print(f"Cluster visualization saved to {save_path}.")
+
+
+
+
+
+def analyze_category_distribution(mongo_uri, db_name, output_collection, csv_save_path, plot_save_path, heatmap_save_path):
+    """
+    Analyze and visualize the distribution of news categories within each cluster.
+
+    Parameters:
+    - mongo_uri (str): MongoDB connection URI.
+    - db_name (str): MongoDB database name.
+    - output_collection (str): Collection name containing clustering results.
+    - csv_save_path (str): Path to save the aggregated CSV file.
+    - plot_save_path (str): Path to save the stacked bar chart.
+    - heatmap_save_path (str): Path to save the heatmap.
+
+    Returns:
+    - None
+    """
+    from pymongo import MongoClient
+
+    # -----------------------------
+    # Connect to MongoDB
+    # -----------------------------
+    client = MongoClient(mongo_uri)
+    db = client[db_name]
+    collection = db[output_collection]
+
+    # -----------------------------
+    # Fetch Clustering Results
+    # -----------------------------
+    print("Fetching clustering results from MongoDB...")
+    cursor = collection.find({}, {"_id": 1, "news_id": 1, "category": 1, "cluster": 1})
+    data = list(cursor)
+    print(f"Fetched {len(data)} documents.")
+
+    # -----------------------------
+    # Load Data into DataFrame
+    # -----------------------------
+    df = pd.DataFrame(data)
+    print("Data loaded into DataFrame.")
+
+    # -----------------------------
+    # Data Cleaning
+    # -----------------------------
+    # Drop rows with missing 'category' or 'cluster'
+    initial_shape = df.shape
+    df = df.dropna(subset=['category', 'cluster'])
+    cleaned_shape = df.shape
+    print(f"Dropped {initial_shape[0] - cleaned_shape[0]} documents due to missing 'category' or 'cluster'.")
+
+    # Ensure 'cluster' is integer
+    df['cluster'] = df['cluster'].astype(int)
+
+    # -----------------------------
+    # Aggregate Counts
+    # -----------------------------
+    print("Aggregating category counts per cluster...")
+    aggregation = df.groupby(['cluster', 'category']).size().reset_index(name='count')
+    print("Aggregation completed.")
+
+    # -----------------------------
+    # Save Aggregated Data
+    # -----------------------------
+    print(f"Saving aggregated data to '{csv_save_path}'...")
+    aggregation.to_csv(csv_save_path, index=False)
+    print("Aggregated data saved.")
+
+    # -----------------------------
+    # Create Pivot Table for Visualization
+    # -----------------------------
+    print("Creating pivot table for visualization...")
+    pivot_table = aggregation.pivot(index='cluster', columns='category', values='count').fillna(0).astype(int)
+    print("Pivot table created.")
+
+    # -----------------------------
+    # Save Pivot Table as CSV (Optional)
+    # -----------------------------
+    pivot_table.to_csv("src/outputs/cluster_category_pivot_table.csv")
+    print("Pivot table saved as 'cluster_category_pivot_table.csv'.")
+
+    # -----------------------------
+    # Visualization: Stacked Bar Chart
+    # -----------------------------
+    print("Generating stacked bar chart...")
+    plt.figure(figsize=(12, 8))
+    pivot_table.plot(kind='bar', stacked=True, figsize=(12, 8), colormap='tab20', edgecolor='none')
+    plt.title('Distribution of News Categories within Each Cluster')
+    plt.xlabel('Cluster')
+    plt.ylabel('Number of News Articles')
+    plt.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.savefig(plot_save_path, dpi=300)
+    plt.close()
+    print(f"Stacked bar chart saved to '{plot_save_path}'.")
+
+    # -----------------------------
+    # Visualization: Heatmap
+    # -----------------------------
+    print("Generating heatmap...")
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(pivot_table, annot=True, fmt='d', cmap='YlGnBu', linewidths=.5)
+    plt.title('Heatmap of News Category Distribution per Cluster')
+    plt.xlabel('Category')
+    plt.ylabel('Cluster')
+    plt.tight_layout()
+    plt.savefig(heatmap_save_path, dpi=300)
+    plt.close()
+    print(f"Heatmap saved to '{heatmap_save_path}'.")
+
+
+
+
+
+def main():
+    """
+    Main function to execute the PCA and clustering pipeline.
+    """
+    # -----------------------------
+    # Configuration Parameters
+    # -----------------------------
+    MONGO_URI = "mongodb://root:example@mongodb:27017/admin"  # Adjust as needed
+    DB_NAME = "mind_news"
+    NEWS_EMBEDDINGS_COLLECTION = "news_combined_embeddings"
+    NEWS_COLLECTIONS = ["news_train", "news_valid"]
+    OUTPUT_COLLECTION = "news_combined_embeddings_processed"
+    
+    PCA_COMPONENTS = 50  # Number of principal components
+    KMEANS_CLUSTERS = 3  # Number of clusters
+    VISUALIZATION_PATH = "src/outputs/clusters_visualization_3.png"
+    CATEGORY_DISTRIBUTION_CSV = "src/outputs/cluster_category_distribution.csv"
+    CATEGORY_DISTRIBUTION_PLOT = "src/outputs/cluster_category_distribution.png"
+    CATEGORY_DISTRIBUTION_HEATMAP = "src/outputs/cluster_category_distribution_heatmap.png"
+
+    
+    try:
+        # -----------------------------
+        # Load Data from MongoDB
+        # -----------------------------
+        print("Loading data from MongoDB...")
+        
+        news_embeddings, news = load_data(
+            mongo_uri=MONGO_URI,
+            db_name=DB_NAME,
+            news_embeddings_collection=NEWS_EMBEDDINGS_COLLECTION,
+            news_collections=NEWS_COLLECTIONS  # Pass the list of news collections
+        )
+    
+        print(f"Loaded {len(news_embeddings)} news embeddings.")
+        print(f"Loaded {len(news)} news articles.")
+    
+        # -----------------------------
+        # Create news_id to category mapping
+        # -----------------------------
+        print("Creating news_id to category mapping...")
+        news_id_to_category = create_news_id_to_category_map(news)
+        print(f"Created mapping for {len(news_id_to_category)} news_ids.")
+    
+        # -----------------------------
+        # Parse Embedding Strings and Assign Categories
+        # -----------------------------
+        print("Parsing embedding strings and assigning categories...")
+        embeddings, doc_ids, news_ids, categories = parse_embeddings(news_embeddings, news_id_to_category)
+        print(f"Parsed embeddings shape: {embeddings.shape}")
+        print(f"Assigned categories to {len(categories)} embeddings.")
+    
+        # -----------------------------
+        # Perform PCA
+        # -----------------------------
+        reduced_embeddings, pca_model = perform_pca(embeddings, n_components=PCA_COMPONENTS)
+    
+        # -----------------------------
+        # Perform K-Means Clustering
+        # -----------------------------
+        cluster_labels, kmeans_model = perform_kmeans(reduced_embeddings, n_clusters=KMEANS_CLUSTERS)
+    
+        # -----------------------------
+        # Save Results Back to MongoDB
+        # -----------------------------
+        print(f"Saving clustering results back to MongoDB collection '{OUTPUT_COLLECTION}'...")
+        save_results(
+            mongo_uri=MONGO_URI,
+            db_name=DB_NAME,
+            output_collection=OUTPUT_COLLECTION,
+            doc_ids=doc_ids,
+            cluster_labels=cluster_labels,
+            news_ids=news_ids,
+            categories=categories,
+            pca_embeddings=reduced_embeddings  # Pass the PCA-transformed embeddings here
+        )
+        print("Data successfully saved to MongoDB.")
+    
+        # -----------------------------
+        # Visualize Clusters
+        # -----------------------------
+        print("Starting cluster visualization...")
+        visualize_with_pca(
+            reduced_embeddings=reduced_embeddings,
+            cluster_labels=cluster_labels,
+            save_path=VISUALIZATION_PATH
+        )
+        print("Visualization completed and saved.")
+        
+        analyze_category_distribution(
+            mongo_uri=MONGO_URI,
+            db_name=DB_NAME,
+            output_collection=OUTPUT_COLLECTION,
+            csv_save_path=CATEGORY_DISTRIBUTION_CSV,
+            plot_save_path=CATEGORY_DISTRIBUTION_PLOT,
+            heatmap_save_path=CATEGORY_DISTRIBUTION_HEATMAP
+        )
+        print("Category distribution analysis completed.")
+
+    
+    except Exception as e:
+        print("An error occurred:", e)
+        raise
+
+
 if __name__ == "__main__":
     main()

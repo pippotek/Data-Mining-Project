@@ -66,6 +66,29 @@ services:
     depends_on:
       - mongodb
 
+  clustering:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: clustering  # Specify the service for the build
+    container_name: spark-clustering
+    ports:
+      - "8890:8888"  # Expose Jupyter notebook for this container
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    volumes:
+      - spark-dependencies:/opt/spark/jars  # Volume to retain JAR dependencies
+      - ivy-cache:/root/.ivy2
+      - ./src/outputs:/app/src/outputs   
+    depends_on:
+      - mongodb
+
   mongodb:
     image: mongo:5.0
     container_name: mongodb
