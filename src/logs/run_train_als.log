@@ -1,4 +1,0 @@
-2024-12-18 17:13:01,080 - ALS_Run_Train - INFO - Starting data loading...
-2024-12-18 17:13:13,555 - ALS_Run_Train - INFO - Starting ALS training with data source: recommenders
-2024-12-18 17:14:44,220 - ALS_Run_Train - ERROR - An error occurred during training: name 'k' is not defined
-2024-12-18 17:14:44,759 - ALS_Run_Train - INFO - Spark session stopped.
