@@ -1,14 +1,5 @@
-import sys
-import logging
-from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-from pyspark.sql.types import ArrayType, FloatType
-from pyspark.ml.linalg import Vectors, VectorUDT
-# from pyspark.ml.feature import PCA
-from pyspark.ml.clustering import KMeans
-from pyspark.sql import Row
 from sklearn.decomposition import PCA
-import pymongo
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
@@ -211,7 +202,9 @@ def save_results(mongo_uri, db_name, output_collection, doc_ids, cluster_labels,
     else:
         print("No results to save.")
 
-    
+
+
+
 
 def visualize_clusters_tsne(reduced_embeddings, cluster_labels, save_path="src/outputs/clusters_visualization.png"):
     """
@@ -357,11 +350,6 @@ def analyze_category_distribution(mongo_uri, db_name, output_collection, csv_sav
     pivot_table = aggregation.pivot(index='cluster', columns='category', values='count').fillna(0).astype(int)
     print("Pivot table created.")
 
-    # -----------------------------
-    # Save Pivot Table as CSV (Optional)
-    # -----------------------------
-    pivot_table.to_csv("src/outputs/cluster_category_pivot_table.csv")
-    print("Pivot table saved as 'cluster_category_pivot_table.csv'.")
 
     # -----------------------------
     # Visualization: Stacked Bar Chart
@@ -395,7 +383,6 @@ def analyze_category_distribution(mongo_uri, db_name, output_collection, csv_sav
 
 
 
-
 def main():
     """
     Main function to execute the PCA and clustering pipeline.
@@ -416,52 +403,85 @@ def main():
     CATEGORY_DISTRIBUTION_PLOT = "src/outputs/cluster_category_distribution.png"
     CATEGORY_DISTRIBUTION_HEATMAP = "src/outputs/cluster_category_distribution_heatmap.png"
 
-    
     try:
+        from pymongo import MongoClient
+
         # -----------------------------
-        # Load Data from MongoDB
+        # Check if Processed Collection Exists
         # -----------------------------
-        print("Loading data from MongoDB...")
+        print("Connecting to MongoDB...")
+        client = MongoClient(MONGO_URI)
+        db = client[DB_NAME]
+
+        if OUTPUT_COLLECTION in db.list_collection_names():
+            print(f"'{OUTPUT_COLLECTION}' already exists in the database. Skipping preprocessing...")
+            processed_data = list(db[OUTPUT_COLLECTION].find())
+            doc_ids = [doc["_id"] for doc in processed_data]
+            news_ids = [doc["news_id"] for doc in processed_data]
+            categories = [doc["category"] for doc in processed_data]
+            reduced_embeddings = np.array([doc["pca_embedding"] for doc in processed_data])
+        else:
+            # -----------------------------
+            # Load Data from MongoDB
+            # -----------------------------
+            print("Loading data from MongoDB...")
+            news_embeddings, news = load_data(
+                mongo_uri=MONGO_URI,
+                db_name=DB_NAME,
+                news_embeddings_collection=NEWS_EMBEDDINGS_COLLECTION,
+                news_collections=NEWS_COLLECTIONS  # Pass the list of news collections
+            )
         
-        news_embeddings, news = load_data(
-            mongo_uri=MONGO_URI,
-            db_name=DB_NAME,
-            news_embeddings_collection=NEWS_EMBEDDINGS_COLLECTION,
-            news_collections=NEWS_COLLECTIONS  # Pass the list of news collections
-        )
-    
-        print(f"Loaded {len(news_embeddings)} news embeddings.")
-        print(f"Loaded {len(news)} news articles.")
-    
-        # -----------------------------
-        # Create news_id to category mapping
-        # -----------------------------
-        print("Creating news_id to category mapping...")
-        news_id_to_category = create_news_id_to_category_map(news)
-        print(f"Created mapping for {len(news_id_to_category)} news_ids.")
-    
-        # -----------------------------
-        # Parse Embedding Strings and Assign Categories
-        # -----------------------------
-        print("Parsing embedding strings and assigning categories...")
-        embeddings, doc_ids, news_ids, categories = parse_embeddings(news_embeddings, news_id_to_category)
-        print(f"Parsed embeddings shape: {embeddings.shape}")
-        print(f"Assigned categories to {len(categories)} embeddings.")
-    
-        # -----------------------------
-        # Perform PCA
-        # -----------------------------
-        reduced_embeddings, pca_model = perform_pca(embeddings, n_components=PCA_COMPONENTS)
-    
+            print(f"Loaded {len(news_embeddings)} news embeddings.")
+            print(f"Loaded {len(news)} news articles.")
+        
+            # -----------------------------
+            # Create news_id to category mapping
+            # -----------------------------
+            print("Creating news_id to category mapping...")
+            news_id_to_category = create_news_id_to_category_map(news)
+            print(f"Created mapping for {len(news_id_to_category)} news_ids.")
+        
+            # -----------------------------
+            # Parse Embedding Strings and Assign Categories
+            # -----------------------------
+            print("Parsing embedding strings and assigning categories...")
+            embeddings, doc_ids, news_ids, categories = parse_embeddings(news_embeddings, news_id_to_category)
+            print(f"Parsed embeddings shape: {embeddings.shape}")
+            print(f"Assigned categories to {len(categories)} embeddings.")
+        
+            # -----------------------------
+            # Perform PCA
+            # -----------------------------
+            print(f"Performing PCA to reduce dimensionality to {PCA_COMPONENTS} components...")
+            reduced_embeddings, pca_model = perform_pca(embeddings, n_components=PCA_COMPONENTS)
+            print(f"PCA completed. Reduced embeddings shape: {reduced_embeddings.shape}")
+
+            # -----------------------------
+            # Save Processed Data for Future Use
+            # -----------------------------
+            print(f"Saving processed embeddings and metadata to '{OUTPUT_COLLECTION}'...")
+            save_results(
+                mongo_uri=MONGO_URI,
+                db_name=DB_NAME,
+                output_collection=OUTPUT_COLLECTION,
+                doc_ids=doc_ids,
+                cluster_labels=np.zeros(len(doc_ids)),  # Placeholder, clustering not yet done
+                news_ids=news_ids,
+                categories=categories,
+                pca_embeddings=reduced_embeddings
+            )
+
         # -----------------------------
         # Perform K-Means Clustering
         # -----------------------------
+        print(f"Clustering data into {KMEANS_CLUSTERS} clusters using K-Means...")
         cluster_labels, kmeans_model = perform_kmeans(reduced_embeddings, n_clusters=KMEANS_CLUSTERS)
     
         # -----------------------------
-        # Save Results Back to MongoDB
+        # Save Clustering Results Back to MongoDB
         # -----------------------------
-        print(f"Saving clustering results back to MongoDB collection '{OUTPUT_COLLECTION}'...")
+        print(f"Updating clustering results in '{OUTPUT_COLLECTION}' collection...")
         save_results(
             mongo_uri=MONGO_URI,
             db_name=DB_NAME,
@@ -470,9 +490,9 @@ def main():
             cluster_labels=cluster_labels,
             news_ids=news_ids,
             categories=categories,
-            pca_embeddings=reduced_embeddings  # Pass the PCA-transformed embeddings here
+            pca_embeddings=reduced_embeddings
         )
-        print("Data successfully saved to MongoDB.")
+        print("Clustering results saved to MongoDB.")
     
         # -----------------------------
         # Visualize Clusters
@@ -495,7 +515,6 @@ def main():
         )
         print("Category distribution analysis completed.")
 
-    
     except Exception as e:
         print("An error occurred:", e)
         raise
