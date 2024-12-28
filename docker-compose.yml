@@ -20,6 +20,8 @@ services:
     depends_on:
       - mongodb
       - data-fetch
+    volumes:
+      - ./saved_models:/app/saved_models
 
   data-fetch:
     build:

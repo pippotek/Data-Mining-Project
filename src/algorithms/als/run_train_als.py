@@ -1,8 +1,8 @@
 from pyspark.sql import SparkSession
-from src.algorithms.als.train_als import train_als_model
+from src.algorithms.als.train_als import train_als_model, get_top_predictions
 from src.utilities.logger import get_logger
-from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data
-from pyspark.sql import SparkSession
+from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data, write_to_mongodb
+from pyspark.sql.functions import col, explode
 from src.configs.setup import load_config
 import time
 
@@ -60,9 +60,20 @@ if __name__ == "__main__":
             # Train the ALS model using the preprocessed training/validation data
             model_save_path = config['ALS_CONFIG']["model_save_path"]
             logger.info(f"Starting ALS training with data source: {data_source}")
-            train_als_model(training_data, validation_data, model_save_path)
-        
+            model = train_als_model(training_data, validation_data, model_save_path)
+            reccomendations = model.recommendForAllUsers(numItems= 10)
+            # Explode the 'recommendations' column
+            exploded_recommendations = reccomendations.select(
+                col("userId"),
+                explode(col("recommendations")).alias("recommendation")
+            )
 
+            # Extract 'itemId' and 'rating' from the 'recommendation' column
+            final_recommendations = exploded_recommendations.select(
+                col("userId"),
+                col("recommendation.newsId").alias("recommendation"),
+                col("recommendation.rating").alias("rating"))
+            write_to_mongodb(reccomendations, MONGO_URI=MONGO_URI, DATABASE_NAME='mind_news', COLLECTION_NAME='reccomendations_als')
         except Exception as e:
             logger.error(f"An error occurred during training: {e}")
         finally:
