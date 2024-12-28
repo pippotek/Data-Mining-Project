@@ -34,5 +34,5 @@ services:
     enabled : true
   cbrs:
     enabled : false
-  cbrs:
+  clustering:
     enabled : true
