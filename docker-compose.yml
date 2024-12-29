@@ -46,25 +46,29 @@ services:
   cbrs:
     build:
       context: .
-      dockerfile: Dockerfile  # Consolidated Dockerfile
+      dockerfile: Dockerfile
       args:
-        SERVICE: cbrs  # Specify the service for the build
+        SERVICE: cbrs
     container_name: spark-cbrs
     ports:
-      - "8890:8888"  # Expose Jupyter notebook for this container
-      - "4040:4040"  # Expose Spark UI
+      - "8890:8888"
+      - "4040:4040"
     environment:
       - SPARK_VERSION=3.3.2
       - HADOOP_VERSION=3
       - JAVA_HOME=/usr/local/openjdk-11
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=python3
-      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+      - MONGO_URI=mongodb://mongodb:27017
     volumes:
-      - spark-dependencies:/opt/spark/jars  # Volume to retain JAR dependencies
+      - spark-dependencies:/opt/spark/jars
       - ivy-cache:/root/.ivy2
     depends_on:
       - mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 6G
 
   clustering:
     build:
