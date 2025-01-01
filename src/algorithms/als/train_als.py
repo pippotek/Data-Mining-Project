@@ -3,6 +3,7 @@ from src.algorithms.als.als_utils import create_als_model, save_model, make_pred
 from src.training.evaluation_metrics import compute_regression_metrics, compute_ranking_metrics
 from src.utilities.logger import get_logger
 from src.configs.setup import load_config
+from pyspark.sql.functions import collect_list 
 import time
 
 
