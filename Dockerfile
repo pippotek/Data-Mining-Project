@@ -68,7 +68,7 @@ CMD bash -c "\
     if [ '${SERVICE}' = 'als' ]; then \
         python3 src/algorithms/als/run_train_als.py; \
     elif [ '${SERVICE}' = 'cbrs' ]; then \
-        python3 src/algorithms/cbrs/run_cbrs.py; \
+        python3 src/algorithms/cbrs/cbrs_utils.py; \
     elif [ '${SERVICE}' = 'clustering' ]; then \
         python3 src/algorithms/clustering/clustering.py; \    
     elif [ '${SERVICE}' = 'fetching' ]; then \

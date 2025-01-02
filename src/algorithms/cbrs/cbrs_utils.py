@@ -1,293 +1,403 @@
-from pyspark.sql.types import ArrayType, FloatType, DoubleType
-from pyspark.sql import SparkSession, DataFrame
-from src.utilities.data_utils import * 
-from pyspark.sql.functions import split, explode, avg
-from pyspark.sql.functions import explode, split, when, lit, udf, desc
-from pyspark.sql.window import Window
-from pyspark.sql.functions import col, collect_list
-import pandas as pd
-from pyspark.sql.functions import rank
-import numpy as np
-import logging
-from pyspark.sql.functions import expr
-from pyspark.sql.functions import split, transform, col
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.ml.linalg import VectorUDT
-import pyspark.sql.functions as F
-from pymongo.errors import BulkWriteError
-from pyspark.sql.functions import col, explode, split, when, lit, row_number, desc
-
-from pyspark.ml.feature import BucketedRandomProjectionLSH, Normalizer
+from pyspark.sql import SparkSession, Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import udf, col, explode, split, collect_list, expr
+from pyspark.sql.types import ArrayType, FloatType
+from pyspark.ml.feature import PCA
 from pyspark.ml.linalg import Vectors, VectorUDT
-from pyspark.sql.functions import row_number
-from pyspark.sql.window import Window
+import pandas as pd
+import numpy as np
+import faiss
+from sklearn.preprocessing import normalize
+import logging
+import tempfile
+import math
 
 
-def load_data(
-    spark: SparkSession, 
-    mongo_uri: str, 
-    db_name: str, 
-    news_embeddings_collection: str,
-    behaviors_train_collection: str,
-    behaviors_test_collection: str
-) -> tuple:
 
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Initialize Spark Session with MongoDB Connector
+
+# MongoDB Configuration
+MONGO_URI = "mongodb://root:example@mongodb:27017/admin"
+DATABASE_NAME = "mind_news"
+news_embeddings_collection = "news_combined_embeddings"
+behaviors_train_collection = "behaviors_train"
+behaviors_test_collection = "behaviors_valid"
+RECOMMENDATIONS_COLLECTION = "cbrs_recommendations"
+
+    # Initialize Spark Session with Optimized Configurations
+spark = (SparkSession.builder
+                .appName("Combine News and Generate Embeddings")
+                .master("local[*]")
+                .config("spark.sql.shuffle.partitions", "200")
+                .config("spark.driver.memory", "4g") \
+                .config("spark.executor.memory", "2g") \
+                .config("spark.executor.extraJavaOptions", "-XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=35") \
+                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+                .config("spark.kryoserializer.buffer.max", "128m")
+                .config("spark.jars.packages",
+                        "com.johnsnowlabs.nlp:spark-nlp_2.12:5.5.1,"
+                        "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0")
+                .config("spark.mongodb.read.connection.uri", MONGO_URI)
+                .config("spark.mongodb.write.connection.uri", MONGO_URI)
+                .getOrCreate())
+
+logger.info("Spark Session initialized.")
+
+def fetch_data_from_mongo(spark: SparkSession, uri: str, db_name: str, collection_name: str):
+    """
+    Fetch data from a MongoDB collection into a PySpark DataFrame.
+
+    Parameters
+    ----------
+    spark : SparkSession
+        A SparkSession object, already configured to use the Mongo Spark connector.
+    uri : str
+        The MongoDB connection URI (e.g. "mongodb://user:password@mongodb:27017").
+    db_name : str
+        The name of the MongoDB database.
+    collection_name : str
+        The name of the collection to read from.
+
+    Returns
+    -------
+    pyspark.sql.DataFrame
+        A Spark DataFrame containing the data from the specified MongoDB collection.
+    """
+    df = (spark.read
+               .format("mongodb")
+               .option("uri", uri)
+               .option("database", db_name)
+               .option("collection", collection_name)
+               .load())
+    return df
+
+def load_data(spark, mongo_uri, db_name, news_embeddings_collection, behaviors_train_collection, behaviors_test_collection):
+    """
+    Load data from MongoDB into Spark DataFrames.
+    """
     news_embeddings_df = fetch_data_from_mongo(spark, mongo_uri, db_name, news_embeddings_collection)
     behaviors_train_df = fetch_data_from_mongo(spark, mongo_uri, db_name, behaviors_train_collection)
     behaviors_test_df = fetch_data_from_mongo(spark, mongo_uri, db_name, behaviors_test_collection)
     return news_embeddings_df, behaviors_train_df, behaviors_test_df
 
-
-
-def preprocess_news_embeddings(news_embeddings_df: DataFrame) -> DataFrame:
+def preprocess_news_embeddings(news_embeddings_df):
     """
-    Preprocess news embeddings DataFrame by converting embedding_string to an array of doubles using built-in Spark functions.
+    Convert embedding_string column to an array of floats and optimize data types.
     """
-    news_embeddings_df = news_embeddings_df.withColumn(
-        "embedding",
-        expr("transform(split(embedding_string, ','), x -> cast(x as double))")
-    ).drop("embedding_string")
-    return news_embeddings_df
-
-
-
-@pandas_udf(ArrayType(DoubleType()), PandasUDFType.GROUPED_AGG)
-def average_embeddings(embeddings_series: pd.Series) -> list:
-    """
-    Compute the element-wise average of a series of embeddings.
-    """
-    embeddings = embeddings_series.tolist()
-    if not embeddings:
-        return []
-    sum_embedding = np.sum(embeddings, axis=0)
-    avg_embedding = sum_embedding / len(embeddings)
-    return avg_embedding.tolist()
-
-
-
-def create_user_profiles_with_pandas_udaf(behaviors_train_df: DataFrame, news_embeddings_df: DataFrame) -> DataFrame:
-    """
-    Create user profiles by averaging embeddings using a Pandas UDAF.
-    """
-    behaviors_train_alias = behaviors_train_df.alias("bt")
-    news_embeddings_alias = news_embeddings_df.alias("ne")
-
-    # Explode user history into individual news items and join with news embeddings
-    user_history_df = (
-        behaviors_train_alias
-        .withColumn("history_item", explode(split(col("bt.history"), " ")))
-        .join(
-            news_embeddings_alias,
-            col("history_item") == col("ne.news_id"),
-            how="left"
-        )
-        .select(col("bt.user_id"), col("ne.embedding").alias("embedding"))
-        .filter(col("embedding").isNotNull())
-    )
-
-    # Group by user_id and compute average embeddings
-    user_profiles_df = user_history_df.groupBy("user_id").agg(
-        average_embeddings(col("embedding")).alias("user_embedding")
-    )
-
-    return user_profiles_df
-
-
-
-def compute_recommendations(
-    behaviors_df: DataFrame, 
-    news_embeddings_df: DataFrame, 
-    user_profiles_df: DataFrame, 
-    top_k: int = 10
-) -> DataFrame:
-    """
-    Compute content-based recommendations by joining impressions with user 
-    profiles and scoring via cosine similarity. Returns a DataFrame with
-    user_id, news_id, similarity_score, and rank, filtered to top_k per user.
-    """
-    logger.info("Computing recommendations...")
-
-    # 1) Parse impressions into individual rows
-    impressions_df = (
-        behaviors_df
-        .withColumn("impression_item", explode(split(col("impressions"), " ")))
-        .withColumn("news_id", split(col("impression_item"), "-")[0])
-        .withColumn("clicked", split(col("impression_item"), "-")[1].cast("int"))
-        .drop("impression_item")
-    )
-    logger.info("Impressions parsed.")
+    logger.info("Preprocessing news embeddings...")
     
-    # Join with news embeddings
-    # 2) Join with news embeddings
-    impressions_with_embeddings_df = impressions_df.join(
-        news_embeddings_df, on="news_id", how="left"
-    )
-    logger.info("Joined impressions with news embeddings.")
+    # Define a UDF to parse the embedding string into an array of floats
+    def parse_embedding(embedding_str):
+        return [float(x) for x in embedding_str.split(',')]
+    
+    parse_embedding_udf = udf(parse_embedding, ArrayType(FloatType()))
+    
+    # Apply the UDF and select only necessary columns
+    news_embeddings_df = news_embeddings_df.withColumn("embedding", parse_embedding_udf(col("embedding_string"))) \
+                                           .drop("embedding_string") \
+                                           .select("news_id", "embedding")
+    
+    logger.info("Preprocessed news embeddings.")
+    return news_embeddings_df
+from pyspark.ml.feature import PCA, VectorAssembler
+from pyspark.ml.linalg import Vectors, VectorUDT
+from pyspark.sql.functions import udf
+from pyspark.sql.types import DoubleType
 
-    # 3) Join with user profiles to get 'user_embedding'
-    impressions_with_profiles_df = impressions_with_embeddings_df.join(
-        user_profiles_df, on="user_id", how="left"
-    )
-    logger.info("Joined impressions with user profiles.")
+def convert_array_to_vector(df, array_col, vector_col):
+    """
+    Convert an array column to a Vector column.
+    """
+    logger.info(f"Converting {array_col} from array<float> to vector<float>...")
+    vector_udf = udf(lambda arr: Vectors.dense(arr), VectorUDT())
+    df = df.withColumn(vector_col, vector_udf(col(array_col)))
+    return df
 
-    # 4) Define UDF for cosine similarity
-    @udf(DoubleType())
-    def cosine_similarity_udf(u, n):
-        """
-        Compute cosine similarity between two arrays of doubles.
-        """
-        if u is None or n is None:
-            return 0.0
-        u_arr = np.array(u, dtype=float)
-        n_arr = np.array(n, dtype=float)
-        norm_u = np.linalg.norm(u_arr)
-        norm_n = np.linalg.norm(n_arr)
-        if norm_u == 0 or norm_n == 0:
-            return 0.0
-        return float(np.dot(u_arr, n_arr) / (norm_u * norm_n))
+def apply_pca(df, input_col, output_col, pca_components=128):
+    """
+    Apply PCA to reduce the dimensionality of embeddings.
+    
+    Parameters:
+    - df: Spark DataFrame containing the input column.
+    - input_col: Name of the Vector column to apply PCA on.
+    - output_col: Name of the output column with reduced dimensions.
+    - pca_components: Number of principal components.
+    
+    Returns:
+    - pca_model: Trained PCA model.
+    - df_pca: DataFrame with the reduced-dimensionality embeddings.
+    """
+    logger.info(f"Applying PCA to reduce dimensionality to {pca_components} components...")
+    pca = PCA(k=pca_components, inputCol=input_col, outputCol=output_col)
+    pca_model = pca.fit(df)
+    df_pca = pca_model.transform(df).select("news_id", output_col)
+    logger.info("PCA transformation completed.")
+    return pca_model, df_pca
 
-    # 5) Compute similarity scores
-    scored_df = impressions_with_profiles_df.withColumn(
-        "similarity_score",
-        cosine_similarity_udf(col("user_embedding"), col("embedding"))
-    )
-    logger.info("Similarity scores computed.")
 
-    # 6) (Optional) Remove entries with similarity_score <= 0 to reduce data size
-    scored_df = scored_df.filter(col("similarity_score") > 0)
-    logger.info("Filtered out zero similarity scores.")
+def build_faiss_index(news_embeddings_pca_df):
+    """
+    Build a FAISS index from PCA-reduced news embeddings.
+    
+    Parameters:
+    - news_embeddings_pca_df: Spark DataFrame with 'news_id' and 'embedding_pca'.
+    
+    Returns:
+    - index: FAISS index.
+    - news_ids: List of news IDs corresponding to the embeddings.
+    """
+    logger.info("Building FAISS index with PCA-reduced embeddings...")
+    
+    # Convert Spark DataFrame to Pandas DataFrame
+    news_embeddings_pd = news_embeddings_pca_df.toPandas()
+    logger.info("Converted Spark DataFrame to Pandas DataFrame.")
+    
+    # Extract embeddings and news_ids
+    embeddings = np.vstack(news_embeddings_pd['embedding_pca'].values).astype('float32')
+    news_ids = news_embeddings_pd['news_id'].tolist()
+    logger.info(f"Extracted {len(news_ids)} news embeddings for FAISS indexing.")
+    
+    # Normalize embeddings for cosine similarity
+    embeddings_normalized = normalize(embeddings, axis=1)
+    
+    # Build FAISS index
+    d = embeddings_normalized.shape[1]
+    index = faiss.IndexFlatIP(d)  # Inner Product for cosine similarity
+    index.add(embeddings_normalized)
+    logger.info(f"FAISS index built with {index.ntotal} vectors.")
+    
+    return index, news_ids
 
-    # 7) Repartition by user_id (to optimize window operation)
-    scored_df = scored_df.repartition("user_id")
+def create_user_profiles(behaviors_train_df, news_embeddings_pca_df, pca_model):
+    """
+    Create user profiles by averaging PCA-transformed embeddings of their history.
+    
+    Parameters:
+    - behaviors_train_df: Spark DataFrame with user behaviors.
+    - news_embeddings_pca_df: Spark DataFrame with 'news_id' and 'embedding_pca'.
+    - pca_model: Trained PCA model.
+    
+    Returns:
+    - user_profiles_pca_df: Spark DataFrame with 'user_id' and 'user_embedding_pca' (array<float>).
+    """
+    logger.info("Creating user profiles in PCA space...")
+    
+    # Explode the history field assuming it's a space-separated string
+    behaviors_train_df = behaviors_train_df.withColumn("history_item", explode(split(col("history"), " ")))
+    
+    # Join with PCA-transformed news embeddings to get embeddings for each history item
+    joined_df = behaviors_train_df.join(news_embeddings_pca_df, behaviors_train_df.history_item == news_embeddings_pca_df.news_id, "left") \
+                                   .select("user_id", "embedding_pca")
+    
+    # Group by user_id and collect embeddings into a list
+    user_profiles_pca_df = joined_df.groupBy("user_id") \
+                                    .agg(collect_list("embedding_pca").alias("embeddings_pca")) \
+                                    .withColumn("user_embedding_pca", average_embeddings_udf(col("embeddings_pca"))) \
+                                    .select("user_id", "user_embedding_pca")
+    
+    logger.info(f"Created profiles for {user_profiles_pca_df.count()} users in PCA space.")
+    return user_profiles_pca_df
 
-    # 8) Rank and filter to top_k per user
-    window = Window.partitionBy("user_id").orderBy(desc("similarity_score"))
-    recommendations_df = (
-        scored_df
-        .withColumn("rank", row_number().over(window))
-        .filter(col("rank") <= top_k)  # Only keep top_k
-    )
+# Define a UDF to compute the average of embeddings
+def average_embeddings(embeddings):
+    """
+    Compute the average of a list of embeddings.
+    
+    Parameters:
+    - embeddings: List of lists (embeddings).
+    
+    Returns:
+    - average_embedding: List representing the average embedding.
+    """
+    embeddings_np = np.array(embeddings)
+    if embeddings_np.size == 0:
+        return []
+    return np.mean(embeddings_np, axis=0).tolist()
 
-    logger.info(f"Top-{top_k} recommendations per user selected.")
+# Register the UDF with Spark
+average_embeddings_udf = udf(average_embeddings, ArrayType(FloatType()))
 
+from pyspark.sql.functions import monotonically_increasing_id, floor
+
+def add_distributed_index(df, batch_size):
+    """
+    Adds a unique index to each row in a distributed manner.
+    """
+    df_with_id = df.withColumn("unique_id", monotonically_increasing_id())
+    # Assign batch number based on unique_id
+    df_with_batch = df_with_id.withColumn("batch_num", floor(F.col("unique_id") / batch_size))
+    return df_with_batch
+
+def compute_recommendations(user_profiles_df, faiss_index, news_ids, top_k=10, batch_size=50):
+    """
+    Compute recommendations for each user using the FAISS index in batches.
+    
+    Parameters:
+    - user_profiles_df: Spark DataFrame with 'user_id' and 'user_embedding_pca'.
+    - faiss_index: FAISS index built from news embeddings.
+    - news_ids: List of news IDs corresponding to the FAISS index.
+    - top_k: Number of top recommendations to retrieve.
+    - batch_size: Number of users to process in each batch.
+    
+    Returns:
+    - recommendations_df: Spark DataFrame with recommendations for each user.
+    """
+    import math
+    
+    logger.info("Starting batch processing for recommendations...")
+    
+    # Add distributed index
+    user_profiles_with_batch = add_distributed_index(user_profiles_df, batch_size)
+    
+    # Calculate total users and number of batches
+    total_users = user_profiles_with_batch.count()
+    num_batches = math.ceil(total_users / batch_size)
+    logger.info(f"Total users: {total_users}, Batch size: {batch_size}, Number of batches: {num_batches}")
+    
+    # Initialize list to store recommendations
+    recommendations = []
+    
+    for batch_num in range(num_batches):
+        start = batch_num * batch_size
+        end = (batch_num + 1) * batch_size
+        
+        logger.info(f"Processing batch {batch_num + 1}/{num_batches}: Users {start} to {end - 1}")
+        
+        # Filter the batch
+        batch_df = user_profiles_with_batch.filter(
+            (F.col("batch_num") == batch_num)
+        ).drop("unique_id", "batch_num", "index")  # Drop unnecessary columns
+        
+        user_profiles_pd = batch_df.toPandas()
+
+        # Check if the batch is empty
+        if user_profiles_pd.empty:
+            logger.info(f"Batch {batch_num + 1} is empty. Skipping.")
+            continue
+        
+        # Extract user embeddings
+        user_profiles_pd = user_profiles_pd.dropna(subset = 'user_embedding_pca')
+        user_embeddings = np.vstack(user_profiles_pd['user_embedding_pca'].values).astype('float32')
+        
+        # Normalize embeddings for cosine similarity
+        user_embeddings_normalized = normalize(user_embeddings, axis=1)
+        
+        # Perform FAISS search
+        distances, indices = faiss_index.search(user_embeddings_normalized, top_k)
+        
+        # Prepare recommendations
+        for user, dist, idx in zip(user_profiles_pd['user_id'], distances, indices):
+            rec_news_ids = [news_ids[j] for j in idx]
+            rec_scores = dist.tolist()
+            rec_ranks = list(range(1, len(rec_news_ids) + 1))
+            recommendations.append({
+                "user_id": user,
+                "news_id": rec_news_ids,
+                "similarity_score": rec_scores,
+                "rank": rec_ranks
+            })
+        
+        logger.info(f"Completed batch {batch_num + 1}/{num_batches}")
+    
+    # Convert recommendations to Spark DataFrame
+    recommendations_pd = pd.DataFrame(recommendations)
+    recommendations_df = spark.createDataFrame(recommendations_pd)
+    logger.info("All recommendations have been computed and converted to Spark DataFrame.")
+    
     return recommendations_df
 
 
 
-def evaluate_recommendations(
-    recommendations_df: DataFrame, 
-    behaviors_test_df: DataFrame
-) -> dict:
+
+def save_recommendations_to_mongodb(recommendations_df, mongo_uri, db_name, output_collection):
     """
-    Evaluate the recommendations using precision@k metric.
+    Save recommendations to MongoDB as per the specified document structure.
     """
-    logger.info("Evaluating recommendations...")
+    logger.info("Saving recommendations to MongoDB...")
+    
+    # Assemble the recommendations array
+    recommendations_final = recommendations_df.withColumn("recommendations", 
+        expr("""
+        transform(
+            sequence(1, size(news_id)),
+            x -> struct(
+                news_id[x - 1] as newsId,
+                similarity_score[x - 1] as rating,
+                rank[x - 1] as rank
+            )
+        )
+        """)
+    ).select("user_id", "recommendations") \
+     .withColumnRenamed("user_id", "userId")
+    
+    # Write to MongoDB
+    recommendations_final.write.format("mongo") \
+        .mode("append") \
+        .option("uri", mongo_uri) \
+        .option("database", db_name) \
+        .option("collection", output_collection) \
+        .save()
+    
+    logger.info(f"Saved recommendations to MongoDB collection: {output_collection}")
 
-    rec_selected = recommendations_df.select("user_id", "news_id")
-
-    test_impressions_df = (
-        behaviors_test_df
-        .withColumn("impression_item", explode(split(col("impressions"), " ")))
-        .withColumn("news_id", split(col("impression_item"), "-")[0])
-        .withColumn("actual_clicked", when(split(col("impression_item"), "-")[1] == "1", lit(1)).otherwise(lit(0)))
-        .select("user_id", "news_id", "actual_clicked")
-    )
-
-    logger.info("Test impressions parsed.")
-
-    joined_df = rec_selected.join(test_impressions_df, on=["user_id", "news_id"], how="left")
-
-    # Fill nulls with 0 (no click)
-    joined_df = joined_df.withColumn("actual_clicked", when(col("actual_clicked").isNull(), 0).otherwise(col("actual_clicked")))
-
-    logger.info("Joined recommendations with actual clicks.")
-
-    # Compute average precision per user
-    precision_df = joined_df.groupBy("user_id").agg(avg("actual_clicked").alias("user_precision"))
-
-    # Compute overall precision@k
-    result_row = precision_df.agg(avg("user_precision").alias("avg_precision")).head(1)
-    overall_precision = result_row[0]["avg_precision"] if result_row else None
-
-    metrics = {
-        "precision@k": overall_precision
-    }
-
-    logger.info(f"Evaluation Metrics: {metrics}")
-
-    return metrics
-
-
-def vectorize_arrays(df: DataFrame, array_col: str, vector_col: str) -> DataFrame:
+def main():
     """
-    Convert an array<double> column into a Spark ML Vector column.
+    Main function to execute the recommendation pipeline with PCA integration.
     """
-    to_vector_udf = F.udf(lambda arr: Vectors.dense(arr) if arr else None, VectorUDT())
-    return df.withColumn(vector_col, to_vector_udf(F.col(array_col)))
-
-
-def compute_recommendations_ann(
-    user_profiles_df: DataFrame,
-    news_embeddings_df: DataFrame,
-    top_k: int = 10
-) -> DataFrame:
-    """
-    Use Approximate Nearest Neighbors (LSH) to find the top_k nearest news articles
-    for each user, based on embeddings.
-
-    Returns a DataFrame with columns:
-        - user_id
-        - news_id
-        - distCol (the approximate distance)
-        - rank
-        - similarity_score
-    """
-
-    # 1) Convert array<double> -> Vector
-    user_profiles_vec = vectorize_arrays(user_profiles_df, "user_embedding", "user_vec")
-    news_embeddings_vec = vectorize_arrays(news_embeddings_df, "embedding", "news_vec")
-
-    # 2) Normalize the vectors to unit length for cosine similarity
-    normalizer = Normalizer(inputCol="user_vec", outputCol="normalized_vec", p=2.0)
-    user_profiles_norm = normalizer.transform(user_profiles_vec)
-
-    news_normalizer = Normalizer(inputCol="news_vec", outputCol="normalized_vec", p=2.0)
-    news_embeddings_norm = news_normalizer.transform(news_embeddings_vec)
-
-    # 3) Create an LSH model for approximate nearest neighbors
-    brp = BucketedRandomProjectionLSH(
-        inputCol="normalized_vec",
-        outputCol="hashes",
-        bucketLength=10.0,      # Tuning parameter
-        numHashTables=3          # Tuning parameter
+    # Configurations
+    DATABASE_NAME = 'mind_news'
+    news_embeddings_collection = "news_combined_embeddings"
+    behaviors_train_collection = "behaviors_train"
+    behaviors_test_collection = "behaviors_valid"
+    RECOMMENDATIONS_COLLECTION = "cbrs_recommendations"
+    PCA_COMPONENTS = 128  # Adjust based on desired dimensionality reduction
+    
+    news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
+        spark,
+        MONGO_URI,
+        DATABASE_NAME,
+        news_embeddings_collection,
+        behaviors_train_collection,
+        behaviors_test_collection
     )
     
-    # 4) Fit the LSH model on the users
-    lsh_model = brp.fit(user_profiles_norm)
-
-    # 5) approxSimilarityJoin to find top neighbors between users (datasetA) and news (datasetB)
-    similar_df = lsh_model.approxSimilarityJoin(
-        datasetA=user_profiles_norm,
-        datasetB=news_embeddings_norm,
-        threshold=float("inf"),   # No distance threshold
-        distCol="distCol"         # Name of the distance column
+    # Preprocess embeddings
+    news_embeddings_df = preprocess_news_embeddings(news_embeddings_df)
+    
+    # Convert array<float> to Vector
+    news_embeddings_df = convert_array_to_vector(news_embeddings_df, "embedding", "embedding_vector")
+    
+    # Apply PCA
+    pca_model, news_embeddings_pca_df = apply_pca(
+        news_embeddings_df,
+        input_col="embedding_vector",
+        output_col="embedding_pca",
+        pca_components=PCA_COMPONENTS
+    )
+    
+    # **Pass the pca_model to create_user_profiles**
+    user_profiles_df = create_user_profiles(behaviors_train_df, news_embeddings_pca_df, pca_model)
+    
+    # Build FAISS index
+    faiss_index, news_ids = build_faiss_index(news_embeddings_pca_df)
+    
+    # Broadcast the FAISS index and news_ids
+    # Note: FAISS indexes are not serializable. Instead, you can use a singleton pattern or external storage.
+    # Here, we'll assume the index is small enough to be handled on the driver.
+    
+    # Compute recommendations using FAISS via Pandas UDF
+    recommendations_df = compute_recommendations(
+        user_profiles_df=user_profiles_df,
+        faiss_index=faiss_index,
+        news_ids=news_ids,
+        top_k=10
     )
 
-    # 6) Extract user_id and news_id from the struct columns
-    joined = similar_df.select(
-        F.col("datasetA.user_id").alias("user_id"),
-        F.col("datasetB.news_id").alias("news_id"),
-        F.col("distCol")
-    )
+    recommendations_df.limit(10).show()
 
-    # 7) Rank results by ascending distance (the smaller the distance, the better)
-    window = Window.partitionBy("user_id").orderBy(F.asc("distCol"))
-    ranked = joined.withColumn("rank", row_number().over(window))
-
-    # 8) Filter to top_k
-    top_k_df = ranked.filter(F.col("rank") <= top_k)
-
-    # 9) Compute a similarity score if desired
-    top_k_df = top_k_df.withColumn("similarity_score", 1 / (1 + F.col("distCol")))
-
-    return top_k_df
+if __name__ == "__main__":
+    main()

@@ -2,6 +2,7 @@ from src.algorithms.cbrs.cbrs_utils import *
 from src.utilities.data_utils import * 
 from src.algorithms.cbrs.clean_embed import main_embedding
 from cbrs_utils import *
+from pymongo import MongoClient
 import logging
 from pyspark.sql import SparkSession
 from pyspark.storagelevel import StorageLevel
@@ -74,7 +75,6 @@ def main():
             news_embeddings_df,
             top_k=top_k
         )
-        recommendations_df = recommendations_df.persist(StorageLevel.MEMORY_AND_DISK)
         logger.info("Recommendations computed and persisted.")
 
         ###############################################################
@@ -88,7 +88,6 @@ def main():
         filtered_recommendations_df = recommendations_df.select(
             "user_id", "news_id", "similarity_score", "rank"
         )
-
         ###############################################################
         # Optimize Number of Partitions Before Writing
         # Reduce the number of partitions to avoid overwhelming MongoDB
@@ -96,15 +95,33 @@ def main():
         # logger.info("DataFrame repartitioned to 50 partitions for optimized writing.")
 
         ###############################################################
-        
-        (filtered_recommendations_df
-            .write
-            .format("mongodb")
-            .mode("append")
-            .option("database", DATABASE_NAME)
-            .option("collection", RECOMMENDATIONS_COLLECTION)
-            .option("spark.mongodb.output.batchSize", "50")  # Adjust batch size as needed
-            .save())
+        def write_partition(iterator):
+            client = MongoClient(MONGO_URI)
+            db = client["mind_news"]
+            collection = db["reccomendations_cbrs"]
+            # Bulk insert for efficiency
+            batch = []
+            for row in iterator:
+                logging.info('started inserting partition')
+                batch.append(row.asDict())
+                if len(batch) == 1000:  # Adjust batch size
+                    logging.info('inserting batch in partition')
+                    collection.insert_many(batch)
+                    batch = []
+            if batch:
+                collection.insert_many(batch)
+            client.close()
+
+        filtered_recommendations_df.foreachPartition(write_partition)
+
+        # (filtered_recommendations_df
+        #     .write
+        #     .format("mongodb")
+        #     .mode("append")
+        #     .option("database", DATABASE_NAME)
+        #     .option("collection", RECOMMENDATIONS_COLLECTION)
+        #     .option("spark.mongodb.output.batchSize", "50")  # Adjust batch size as needed
+        #     .save())
 
         # Optional: Evaluate Recommendations
         # Uncomment the following lines if you wish to evaluate
