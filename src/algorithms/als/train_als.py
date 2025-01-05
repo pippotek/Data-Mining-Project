@@ -35,7 +35,7 @@ def train_als_model(training_data, validation_data, model_save_path):
         rmse = regression_metrics["RMSE"]
         
         # Compute ranking metrics
-        ranking_metrics = compute_ranking_metrics(predictions, top_k=config['EVAL_CONFIG']["k"]) 
+        #ranking_metrics = compute_ranking_metrics(predictions, top_k=config['EVAL_CONFIG']["k"]) 
         
         logger.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
         
@@ -43,28 +43,29 @@ def train_als_model(training_data, validation_data, model_save_path):
         wandb.log({
             "RMSE": rmse,
             "Iteration": iteration + 1,
-            "Precision@K": ranking_metrics["Precision@K"],
-            "Recall@K": ranking_metrics["Recall@K"],
-            "NDCG@K": ranking_metrics["NDCG@K"],
-            "Mean Average Precision": ranking_metrics["Mean Average Precision"],
+            #"Precision@K": ranking_metrics["Precision@K"],
+            #"Recall@K": ranking_metrics["Recall@K"],
+            #"NDCG@K": ranking_metrics["NDCG@K"],
+            #"Mean Average Precision": ranking_metrics["Mean Average Precision"],
             })
 
     # Final predictions and metrics
     predictions = make_predictions(model, validation_data)
     predictions.show()
     regression_metrics = compute_regression_metrics(predictions)
-    ranking_metrics = compute_ranking_metrics(predictions, top_k=EVAL_CONFIG["k"])
+    #metrics = compute_ranking_metrics(predictions, top_k=5)
     rmse = regression_metrics["RMSE"]
     
     wandb.log({
         "Final RMSE": rmse,
-        "Final Precision@K": ranking_metrics["Precision@K"],
-        "Final Recall@K": ranking_metrics["Recall@K"],
-        "Final NDCG@K": ranking_metrics["NDCG@K"],
-        "Final Mean Average Precision": ranking_metrics["Mean Average Precision"],
+        #"Final Precision@K": ranking_metrics["Precision@K"],
+        #"Final Recall@K": ranking_metrics["Recall@K"],
+        #"Final NDCG@K": ranking_metrics["NDCG@K"],
+        #"Final Mean Average Precision": ranking_metrics["Mean Average Precision"],
         })
     
-    logger.info(f"Final metrics - RMSE: {rmse}, Precision@K: {ranking_metrics['Precision@K']}, Recall@K: {ranking_metrics['Recall@K']}") 
+    logger.info(f"Final RMSE: {rmse}")
+    #logger.info(f"Final metrics - RMSE: {rmse}, Precision@K: {ranking_metrics['Precision@K']}, Recall@K: {ranking_metrics['Recall@K']}") 
 
     logger.info("Saving the trained ALS model...")
     save_model(model, config['ALS_CONFIG']["model_save_path"])
