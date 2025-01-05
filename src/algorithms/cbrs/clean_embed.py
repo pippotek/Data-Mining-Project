@@ -192,6 +192,8 @@ def main_embedding(spark):
     except Exception as e:
 
         logging.error(f"Error generating embeddings: {e}")
+    
+    spark.stop()
 
 
 

@@ -71,7 +71,6 @@ def train_als_model(training_data, validation_data, model_save_path):
     save_model(model, config['ALS_CONFIG']["model_save_path"])
     
     logger.info(f"ALS model saved successfully to {model_save_path}.")
-    time.sleep(100000)
     wandb.finish()
     logger.info("Training process completed and WandB session closed.")
     return model
