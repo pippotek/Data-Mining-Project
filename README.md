@@ -101,7 +101,7 @@ The repository is organized as follows:
 ### Steps
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/Data-Mining-Project.git
+   git clone https://github.com/pippotek/Data-Mining-Project.git
    cd Data-Mining-Project
    ```
 2. **Start the App**:
