@@ -109,19 +109,12 @@ To validate the embeddings generated for content-based filtering, **K-means clus
 - **Visualization**:
   - PCA (Principal Component Analysis) was used to reduce the dimensionality of embeddings for visualization.
   - A heatmap was generated to show the distribution of categories within each cluster.
- 
 
-<table border="0">
-<tr>
-    <td>
-    <img src="https://github.com/pippotek/Data-Mining-Project/blob/abff3db3d3f95e551de593f3c81aef1491c41ae5/outputs/cluster_category_distribution_heatmap.png" width="50%" />
-    </td>
-    <td>
-    <img src="https://github.com/pippotek/Data-Mining-Project/blob/4ae958b80cb9b34f57bc81ef86b7611e491a8388/outputs/clusters_visualization_3.png", width="100%" />
-    </td>
-</tr>
-</table>
+<br>
 
+<p align="center">
+  <img src="https://github.com/pippotek/Data-Mining-Project/blob/4ae958b80cb9b34f57bc81ef86b7611e491a8388/outputs/clusters_visualization_3.png?raw=true" width="512"/>  
+</p>
 ---
 ## Algorithms
 
