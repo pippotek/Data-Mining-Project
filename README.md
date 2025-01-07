@@ -46,14 +46,6 @@ The repository is organized as follows:
 │       ├── embed.py
 │       ├── prova_fetching.py
 │       └── provamongo.py
-├── outputs
-│   ├── cluster_category_distribution.csv
-│   ├── cluster_category_distribution.png
-│   ├── cluster_category_distribution_heatmap.png
-│   ├── cluster_category_pivot_table.csv
-│   ├── clusters_visualization.png
-│   ├── clusters_visualization_3.png
-│   └── clusters_visualization_4_clusters.png
 ├── requirements
 │   ├── requirements_als.txt
 │   ├── requirements_cbrs.txt
@@ -127,11 +119,7 @@ The repository is organized as follows:
    git clone https://github.com/your-username/Data-Mining-Project.git
    cd Data-Mining-Project
    ```
-2. ** Install Dependencies:
-   ```bash
-   pip install -r requirements.txt
-    ```
-3. Start the App:
+2. **Start the App**:
    ```
    bash start.sh
    ```
