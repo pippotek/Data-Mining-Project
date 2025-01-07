@@ -11,10 +11,10 @@ The project explores key challenges such as scalability, implicit feedback handl
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
 - [Setup Instructions](#setup-instructions)
-- [Clustering](#Clustering)
 - [Algorithms](#algorithms)
   - [Collaborative Filtering](#collaborative-filtering)
   - [Content-Based Filtering](#content-based-filtering)
+  - [Clustering](#Clustering)
 - [Authors](#Authors)
 
 ## Introduction
@@ -108,25 +108,7 @@ The repository is organized as follows:
    ```
    bash start.sh
    ```
-
----
-
-## Clustering
-
-To validate the embeddings generated for content-based filtering, **K-means clustering** was performed on the news article embeddings. The goal was to ensure that similar articles were grouped together.
-
-### Methodology
-- **Number of Clusters (k=3)**: Based on the EDA, the two largest categories (news and sports) formed distinct clusters, while minor categories were grouped into the third cluster.
-- **Visualization**:
-  - PCA (Principal Component Analysis) was used to reduce the dimensionality of embeddings for visualization.
-  - A heatmap was generated to show the distribution of categories within each cluster.
-
-<br>
-
-<p align="center">
-  <img src="https://github.com/pippotek/Data-Mining-Project/blob/4ae958b80cb9b34f57bc81ef86b7611e491a8388/outputs/clusters_visualization_3.png?raw=true" width="512"/>  
-</p>
-
+   
 
 ---
 
@@ -151,6 +133,26 @@ Content-Based Filtering leverages **BERT embeddings** to represent news articles
   1. Generate embeddings for news articles using a pretrained BERT model.
   2. Index embeddings with FAISS for efficient similarity search.
   3. Retrieve similar articles based on a user’s reading history using cosine similarity.
+
+
+ ---
+ 
+### Clustering
+
+To validate the embeddings generated for content-based filtering, **K-means clustering** was performed on the news article embeddings. The goal was to ensure that similar articles were grouped together.
+
+### Methodology
+- **Number of Clusters (k=3)**: Based on the EDA, the two largest categories (news and sports) formed distinct clusters, while minor categories were grouped into the third cluster.
+- **Visualization**:
+  - PCA (Principal Component Analysis) was used to reduce the dimensionality of embeddings for visualization.
+  - A heatmap was generated to show the distribution of categories within each cluster.
+
+<br>
+
+<p align="center">
+  <img src="https://github.com/pippotek/Data-Mining-Project/blob/4ae958b80cb9b34f57bc81ef86b7611e491a8388/outputs/clusters_visualization_3.png?raw=true" width="512"/>  
+</p>
+
 
 ---
 ## Authors
