@@ -104,7 +104,19 @@ The repository is organized as follows:
    git clone https://github.com/pippotek/Data-Mining-Project.git
    cd Data-Mining-Project
    ```
-2. **Start the App**:
+2. Install Docker:
+   Follow the installation guidelines at the [Docker official website](https://www.docker.com)
+3. Run:
+  ### For macOS
+  ```bash
+  brew install yq
+  ```
+  ### For Ubuntu
+  ```bash
+  sudo apt install yq
+  ```
+ 
+5. **Start the App**:
    ```
    bash start.sh
    ```
@@ -141,13 +153,7 @@ Content-Based Filtering leverages **BERT embeddings** to represent news articles
  
 ### Clustering
 
-To validate the embeddings generated for content-based filtering, **K-means clustering** was performed on the news article embeddings. The goal was to ensure that similar articles were grouped together.
-
-### Methodology
-- **Number of Clusters (k=3)**: Based on the EDA, the two largest categories (news and sports) formed distinct clusters, while minor categories were grouped into the third cluster.
-- **Visualization**:
-  - PCA (Principal Component Analysis) was used to reduce the dimensionality of embeddings for visualization.
-  - A heatmap was generated to show the distribution of categories within each cluster.
+To validate the embeddings generated for content-based filtering, **K-means clustering (k=3)** was performed on the news article embeddings. The goal was to ensure that similar articles were grouped together.
 
 <br>
 
