@@ -1,4 +1,4 @@
-# News Recommendation System Using MIND Dataset
+# Dual News Recommendation System Using MIND Dataset
 
 This project implements and compares two personalized news recommendation systems based on the **Microsoft News Dataset (MIND)**. The two approaches used are:
 
@@ -101,8 +101,8 @@ The repository is organized as follows:
 ### Steps
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/pippotek/Data-Mining-Project.git
-   cd Data-Mining-Project
+   git clone https://github.com/pippotek/Dual-Recommendation-System.git
+   cd Dual-Recommendation-System
    ```
 2. Install Docker: follow the installation guidelines at the [Docker official website](https://www.docker.com)
 3. Run:
