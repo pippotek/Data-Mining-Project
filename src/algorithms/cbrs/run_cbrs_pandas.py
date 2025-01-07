@@ -22,8 +22,13 @@ def main():
     INDEX_PATH = '/app/src/algorithms/cbrs/index/faiss_index.index'
     TOP_K = 10
 
-    wait_for_data(MONGO_URI, DATABASE_NAME, [behaviors_test_collection, behaviors_train_collection, 'news_train', 'news_test'], check_field='_id')
-    main_embedding(init_spark_session())
+    spark = init_spark_session()
+    logger.info('Waiting for data...')
+    cont = wait_for_data(MONGO_URI, DATABASE_NAME, ['recommendations_als'], check_field='_id', timeout=6000) 
+
+    while not cont:
+        pass
+    main_embedding(spark)
     # Ensure the index directory exists
     import os
     index_dir = os.path.dirname(INDEX_PATH)
@@ -31,7 +36,7 @@ def main():
 
     # Load data from MongoDB
     logger.info("Loading data from MongoDB...")
-    news_embeddings_df, behaviors_train_df = load_data(
+    news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
         mongo_uri=MONGO_URI,
         db_name=DATABASE_NAME,
         news_embeddings_collection=news_embeddings_collection,

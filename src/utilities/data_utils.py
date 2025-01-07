@@ -98,32 +98,42 @@ def preprocess_behaviors_mind(
 
 def wait_for_data(uri, db_name, collection_names, check_field, timeout=600, interval=10):
     """
-    Poll the MongoDB collection to ensure data exists.
+    Poll the MongoDB collections to ensure data exists in each one.
 
     Parameters:
         uri (str): MongoDB URI.
         db_name (str): Database name.
-        collection_name (str): Collection name.
+        collection_names (list of str): List of collection names to check.
         check_field (str): Field to check for existence.
-        timeout (int): Maximum time to wait in seconds.
+        timeout (int): Maximum time to wait for each collection in seconds.
         interval (int): Time between checks in seconds.
     """
-    
     client = MongoClient(uri)
     db = client[db_name]
+
+    # Iterate over each collection name provided
     for collection_name in collection_names:
-
         collection = db[collection_name]
-
         start_time = time.time()
+
+        print(f"Checking collection '{collection_name}' for data...")
+
+        # Wait for data to appear in the current collection
         while time.time() - start_time < timeout:
             if collection.find_one({check_field: {"$exists": True}}):
-                print("Data is available in the database.")
-                return True
-            print("Waiting for data...")
+                print(f"Data found in collection '{collection_name}'.")
+                break  # Move on to the next collection once data is found
+            print(f"Waiting for data in collection '{collection_name}'...")
             time.sleep(interval)
+        else:
+            # Timeout reached without finding data in this collection
+            raise TimeoutError(
+                f"Data was not available in collection '{collection_name}' "
+                f"within {timeout} seconds."
+            )
 
-        raise TimeoutError(f"Data was not available in the database within {timeout} seconds.")
+    print("Data is available in all specified collections.")
+    return True
 
 def write_to_mongodb(df: DataFrame, MONGO_URI: str, DATABASE_NAME: str, COLLECTION_NAME: str):
     """

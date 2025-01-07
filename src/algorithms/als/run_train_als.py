@@ -5,7 +5,8 @@ from pyspark.sql.functions import col, explode
 from src.configs.setup import load_config
 import logging
 
-
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
@@ -22,13 +23,10 @@ if __name__ == "__main__":
             collection_names=["behaviors_train", "news_train", "behaviors_valid", "news_valid"],
             check_field="_id"
             )
-        print("Starting training...")
+        logger.info("Starting training...")
         spark = (SparkSession.builder
         .appName("ALS_Training")
         .master("local[*]") \
-        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
-        .config("spark.kryoserializer.buffer.max", "2000M") \
-        .config("spark.driver.maxResultSize", "0") \
         .config("spark.jars.packages",
                 "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0") \
         .config("spark.mongodb.read.connection.uri", MONGO_URI) \
@@ -36,7 +34,7 @@ if __name__ == "__main__":
         .getOrCreate()
         )
 
-        logging.info("Starting data loading...")
+        logger.info("Starting data loading...")
         
         try:
             
@@ -53,12 +51,12 @@ if __name__ == "__main__":
                 training_data, validation_data = preprocess_behaviors_mind(spark, train_behaviors_df, valid_behaviors_df, npratio=4)
 
             else:
-                logging.error(f"Unsupported data source: {data_source}")
+                logger.error(f"Unsupported data source: {data_source}")
                 raise ValueError(f"Unsupported data source: {data_source}")
 
             # Train the ALS model using the preprocessed training/validation data
             model_save_path = config['ALS_CONFIG']["model_save_path"]
-            logging.info(f"Starting ALS training with data source: {data_source}")
+            logger.info(f"Starting ALS training with data source: {data_source}")
             model = train_als_model(training_data, validation_data, model_save_path)
             reccomendations = model.recommendForAllUsers(numItems= 10)
             # Explode the 'recommendations' column
@@ -72,13 +70,13 @@ if __name__ == "__main__":
                 col("userId"),
                 col("recommendation.newsId").alias("recommendation"),
                 col("recommendation.rating").alias("rating"))
-            write_to_mongodb(reccomendations, MONGO_URI=MONGO_URI, DATABASE_NAME='mind_news', COLLECTION_NAME='reccomendations_als')
+            write_to_mongodb(reccomendations, MONGO_URI=MONGO_URI, DATABASE_NAME='mind_news', COLLECTION_NAME='recommendations_als')
         except Exception as e:
-            logging.error(f"An error occurred during training: {e}")
+            logger.error(f"An error occurred during training: {e}")
         finally:
             try:
                 spark.stop()
-                logging.info("Spark session stopped.")
+                logger.info("Spark session stopped.")
             except Exception as e:
                 print(f"Error stopping SparkSession: {e}")
 

@@ -2,10 +2,12 @@ import wandb
 from src.algorithms.als.als_utils import create_als_model, save_model, make_predictions
 from src.training.evaluation_metrics import compute_regression_metrics
 from src.configs.setup import load_config
-from pyspark.sql.functions import collect_list 
 import logging
 
 config = load_config('src/configs/config.yaml')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
 
 def train_als_model(training_data, validation_data, model_save_path):
     config = load_config('src/configs/config.yaml')
@@ -17,7 +19,7 @@ def train_als_model(training_data, validation_data, model_save_path):
 
     )
 
-    logging.info("Starting ALS model training...")
+    logger.info("Starting ALS model training...")
     als = create_als_model()
     
     for iteration in range(config['ALS_CONFIG']["max_iter"]):
@@ -30,7 +32,7 @@ def train_als_model(training_data, validation_data, model_save_path):
         regression_metrics = compute_regression_metrics(predictions)
         rmse = regression_metrics["RMSE"]
         
-        logging.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
+        logger.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
         
 
         wandb.log({
@@ -49,45 +51,13 @@ def train_als_model(training_data, validation_data, model_save_path):
         "Final RMSE": rmse,
         })
     
-    logging.info(f"Final RMSE: {rmse}")
+    logger.info(f"Final RMSE: {rmse}")
 
 
-    logging.info("Saving the trained ALS model...")
+    logger.info("Saving the trained ALS model...")
     save_model(model, config['ALS_CONFIG']["model_save_path"])
     
-    logging.info(f"ALS model saved successfully to {model_save_path}.")
+    logger.info(f"ALS model saved successfully to {model_save_path}.")
     wandb.finish()
-    logging.info("Training process completed and WandB session closed.")
+    logger.info("Training process completed and WandB session closed.")
     return model
-
-def get_top_predictions(model, data, top_n=10):
-    """
-    Retrieves the top N predictions for each user.
-
-    Args:
-        model: The trained ALS model.
-        data: The dataset for which predictions are to be made.
-        top_n: Number of top predictions to retrieve.
-
-    Returns:
-        A DataFrame containing the top N predictions for each user.
-    """
-    logging.info("Generating top predictions...")
-    predictions = make_predictions(model, data)
-    
-    # Assuming predictions DataFrame has 'userId', 'itemId', and 'prediction' columns
-    top_predictions = predictions.orderBy(['userId', 'prediction'], ascending=[True, False])
-    top_predictions = top_predictions.groupBy('userId').agg(
-        collect_list('itemId').alias('top_items'),
-        collect_list('prediction').alias('top_scores')
-    )
-    
-    # Limit to top N
-    top_predictions = top_predictions.select(
-        'userId',
-        top_predictions['top_items'][0:top_n].alias('top_items'),
-        top_predictions['top_scores'][0:top_n].alias('top_scores')
-    )
-
-    logging.info("Top predictions generated successfully.")
-    return top_predictions

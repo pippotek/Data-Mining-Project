@@ -5,7 +5,7 @@ wandb_key : "a967166cb6f5f15eefe606cee45c0b6a185c2174"
 
 ALS_CONFIG : {
     "rank": 40,               # Number of latent factors
-    "max_iter": 15,           # Number of iterations to run the optimization
+    "max_iter": 2,           # Number of iterations to run the optimization
     "reg_param": 0.1,         # Regularization parameter
     "implicit_prefs": True,   # If True, ALS will use implicit feedback
     "alpha": 1.0,             # Confidence parameter (only relevant if implicit_prefs=True)

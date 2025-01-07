@@ -41,7 +41,7 @@ def init_spark_session() -> SparkSession:
              .config("spark.mongodb.output.writeConcern.w", "1")
              .getOrCreate())
     logger.info("Spark Session initialized successfully.")
-    spark.conf.set("spark.sql.debug.maxToStringFields", 50000)  # Replace 1000 with your desired limit
+    spark.conf.set("spark.sql.debug.maxToStringFields", 50000)  
 
     return spark
 
