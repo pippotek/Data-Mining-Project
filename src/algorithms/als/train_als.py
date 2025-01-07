@@ -1,10 +1,9 @@
 import wandb
 from src.algorithms.als.als_utils import create_als_model, save_model, make_predictions
-from src.training.evaluation_metrics import compute_regression_metrics, compute_ranking_metrics
+from src.training.evaluation_metrics import compute_regression_metrics
 from src.utilities.logger import get_logger
 from src.configs.setup import load_config
 from pyspark.sql.functions import collect_list 
-import time
 
 
 logger = get_logger(name="ALS_Training", log_file="logs/train_als.log")
@@ -34,19 +33,12 @@ def train_als_model(training_data, validation_data, model_save_path):
         regression_metrics = compute_regression_metrics(predictions)
         rmse = regression_metrics["RMSE"]
         
-        # Compute ranking metrics
-        #ranking_metrics = compute_ranking_metrics(predictions, top_k=config['EVAL_CONFIG']["k"]) 
-        
         logger.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
         
 
         wandb.log({
             "RMSE": rmse,
             "Iteration": iteration + 1,
-            #"Precision@K": ranking_metrics["Precision@K"],
-            #"Recall@K": ranking_metrics["Recall@K"],
-            #"NDCG@K": ranking_metrics["NDCG@K"],
-            #"Mean Average Precision": ranking_metrics["Mean Average Precision"],
             })
 
     # Final predictions and metrics
@@ -58,14 +50,10 @@ def train_als_model(training_data, validation_data, model_save_path):
     
     wandb.log({
         "Final RMSE": rmse,
-        #"Final Precision@K": ranking_metrics["Precision@K"],
-        #"Final Recall@K": ranking_metrics["Recall@K"],
-        #"Final NDCG@K": ranking_metrics["NDCG@K"],
-        #"Final Mean Average Precision": ranking_metrics["Mean Average Precision"],
         })
     
     logger.info(f"Final RMSE: {rmse}")
-    #logger.info(f"Final metrics - RMSE: {rmse}, Precision@K: {ranking_metrics['Precision@K']}, Recall@K: {ranking_metrics['Recall@K']}") 
+
 
     logger.info("Saving the trained ALS model...")
     save_model(model, config['ALS_CONFIG']["model_save_path"])

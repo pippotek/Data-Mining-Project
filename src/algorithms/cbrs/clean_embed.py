@@ -1,6 +1,4 @@
 import logging
-from typing import List
-
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col, concat_ws, regexp_replace, lower, flatten, row_number
 from pyspark.sql.window import Window

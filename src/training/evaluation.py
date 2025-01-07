@@ -2,7 +2,6 @@ import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 from pyspark.ml.recommendation import ALSModel
 import wandb
-from src.algorithms.als.als_configs import ALS_CONFIG, EVAL_CONFIG
 from training.evaluation_metrics import compute_ranking_metrics 
 from src.configs.setup import load_config
 

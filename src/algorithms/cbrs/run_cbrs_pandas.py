@@ -1,10 +1,8 @@
 from src.algorithms.cbrs.cbrs_utils_pandas import * 
-from src.utilities.data_utils import * 
-from src.algorithms.cbrs.clean_embed import main_embedding
+from src.utilities.data_utils import wait_for_data
+from src.algorithms.cbrs.clean_embed import main_embedding, init_spark_session
 from cbrs_utils_pandas import *
 import logging
-from pyspark.sql import SparkSession
-from pyspark.storagelevel import StorageLevel
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -25,6 +23,8 @@ def main():
     INDEX_PATH = '/app/src/algorithms/cbrs/index/faiss_index.index'
     TOP_K = 10
 
+    wait_for_data(MONGO_URI, DATABASE_NAME, [behaviors_test_collection, behaviors_train_collection, 'news_train', 'news_test'], check_field='_id')
+    main_embedding(init_spark_session())
     # Ensure the index directory exists
     import os
     index_dir = os.path.dirname(INDEX_PATH)
@@ -32,7 +32,7 @@ def main():
 
     # Load data from MongoDB
     logger.info("Loading data from MongoDB...")
-    news_embeddings_df, behaviors_train_df, behaviors_test_df = load_data(
+    news_embeddings_df, behaviors_train_df = load_data(
         mongo_uri=MONGO_URI,
         db_name=DATABASE_NAME,
         news_embeddings_collection=news_embeddings_collection,

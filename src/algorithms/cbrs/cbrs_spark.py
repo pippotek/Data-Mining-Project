@@ -1,4 +1,4 @@
-from pyspark.sql import SparkSession, Window
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.functions import udf, col, explode, split, collect_list, expr
 from pyspark.sql.types import ArrayType, FloatType
@@ -9,8 +9,6 @@ import numpy as np
 import faiss
 from sklearn.preprocessing import normalize
 import logging
-import tempfile
-import math
 
 
 
@@ -103,10 +101,9 @@ def preprocess_news_embeddings(news_embeddings_df):
     
     logger.info("Preprocessed news embeddings.")
     return news_embeddings_df
-from pyspark.ml.feature import PCA, VectorAssembler
+from pyspark.ml.feature import PCA
 from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.sql.functions import udf
-from pyspark.sql.types import DoubleType
 
 def convert_array_to_vector(df, array_col, vector_col):
     """
@@ -385,9 +382,6 @@ def main():
     # Build FAISS index
     faiss_index, news_ids = build_faiss_index(news_embeddings_pca_df)
     
-    # Broadcast the FAISS index and news_ids
-    # Note: FAISS indexes are not serializable. Instead, you can use a singleton pattern or external storage.
-    # Here, we'll assume the index is small enough to be handled on the driver.
     
     # Compute recommendations using FAISS via Pandas UDF
     recommendations_df = compute_recommendations(

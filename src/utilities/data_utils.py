@@ -126,16 +126,22 @@ def wait_for_data(uri, db_name, collection_names, check_field, timeout=600, inte
 
         raise TimeoutError(f"Data was not available in the database within {timeout} seconds.")
 
-def write_to_mongodb(df: DataFrame, MONGO_URI, DATABASE_NAME, COLLECTION_NAME):
+def write_to_mongodb(df: DataFrame, MONGO_URI: str, DATABASE_NAME: str, COLLECTION_NAME: str):
     """
-    Write the given DataFrame to the MongoDB embeddings collection.
+    Write the given DataFrame to the MongoDB embeddings collection efficiently.
     
     :param df: DataFrame to write
+    :param MONGO_URI: MongoDB connection URI
+    :param DATABASE_NAME: Target MongoDB database name
+    :param COLLECTION_NAME: Target MongoDB collection name
     """
     (df.write
      .format("mongodb")
      .option("uri", MONGO_URI)
      .option("database", DATABASE_NAME)
      .option("collection", COLLECTION_NAME)
+     .option("replaceDocument", "false")  # Append mode to avoid replacing existing documents
      .mode("append")
+     .option("batchSize", 1000)  # Adjust based on MongoDB server capacity
+     .option("w", "majority")     # Ensure write acknowledgment
      .save())

@@ -1,10 +1,10 @@
 from pyspark.sql import SparkSession
-from src.algorithms.als.train_als import train_als_model, get_top_predictions
+from src.algorithms.als.train_als import train_als_model
 from src.utilities.logger import get_logger
 from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data, write_to_mongodb
 from pyspark.sql.functions import col, explode
 from src.configs.setup import load_config
-import time
+
 
 
 logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
