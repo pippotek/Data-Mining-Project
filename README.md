@@ -15,6 +15,7 @@ The project explores key challenges such as scalability, implicit feedback handl
   - [Collaborative Filtering](#collaborative-filtering)
   - [Content-Based Filtering](#content-based-filtering)
   - [Clustering](#Clustering)
+- [Results](#Results)
 - [Authors](#Authors)
 
 ## Introduction
@@ -104,16 +105,10 @@ The repository is organized as follows:
    git clone https://github.com/pippotek/Dual-Recommendation-System.git
    cd Dual-Recommendation-System
    ```
-2. Install Docker: follow the installation guidelines at the [Docker official website](https://www.docker.com)
-3. Run:
-   For macOS
-  ```bash
-  brew install yq
-  ```
-  For Ubuntu
-  ```bash
-  sudo apt install yq
-  ```
+2. Install Dependencies:
+   ```bash
+    pip install requirements.txt
+   ```
  
 5. **Start the App**:
    ```
@@ -161,6 +156,12 @@ To validate the embeddings generated for content-based filtering, **K-means clus
   <img src="https://github.com/pippotek/Data-Mining-Project/blob/4ae958b80cb9b34f57bc81ef86b7611e491a8388/outputs/clusters_visualization_3.png?raw=true" width="512"/>  
 </p>
 
+---
+## Results 
+More about the results can be found in our report. 
+<p align="center">
+  <img src="https://github.com/pippotek/Dual-Recommendation-System/blob/30fe225d56cc30d55d1fe80eda03d217e6f89be0/outputs/gif%20data%20mining.mov?raw=true" width="512"/>  
+</p>
 
 ---
 ## Authors
