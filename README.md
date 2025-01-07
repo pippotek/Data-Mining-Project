@@ -163,7 +163,7 @@ To validate the embeddings generated for content-based filtering, **K-means clus
 
 ---
 ## Results 
-More about the results can be found in our report. An example of the **PowerBI dashboard** is showed above:  
+More about the results can be found in our report. An example of the **PowerBI dashboard** is showed below:  
 <p align="center">
   <img src="https://github.com/pippotek/Dual-Recommendation-System/blob/30fe225d56cc30d55d1fe80eda03d217e6f89be0/outputs/gif%20data%20mining.mov?raw=true" width="512"/>  
 </p>
