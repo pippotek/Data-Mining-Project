@@ -10,13 +10,12 @@ The project explores key challenges such as scalability, implicit feedback handl
 ## Table of Contents
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
+- [Setup Instructions](#setup-instructions)
 - [Clustering](#Clustering)
 - [Algorithms](#algorithms)
   - [Collaborative Filtering](#collaborative-filtering)
   - [Content-Based Filtering](#content-based-filtering)
-- [Setup Instructions](#setup-instructions)
-- [Results](#results)
-- [Acknowledgements](#acknowledgements)
+- [Authors](#Authors)
 
 ## Introduction
 
@@ -89,14 +88,26 @@ The repository is organized as follows:
 └── start.sh
 ```
 
-
+---
 ### Key Directories
 - `src/`: Core codebase including algorithms, data management, and utilities.
 - `experiments/`: Exploratory scripts for embedding generation and news API fetching.
 - `outputs/`: Contains visualizations and analysis outputs (e.g., cluster visualizations).
 - `requirements/`: Separate requirements files for different modules (ALS, FAISS, etc.).
 
+---
 
+## Setup Instructions
+### Steps
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-username/Data-Mining-Project.git
+   cd Data-Mining-Project
+   ```
+2. **Start the App**:
+   ```
+   bash start.sh
+   ```
 
 ---
 
@@ -142,22 +153,7 @@ Content-Based Filtering leverages **BERT embeddings** to represent news articles
   3. Retrieve similar articles based on a user’s reading history using cosine similarity.
 
 ---
-
-## Setup Instructions
-
-### Prerequisites
-- Docker and Docker Compose
-- Python 3.8+
-- MongoDB
-
-### Steps
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/Data-Mining-Project.git
-   cd Data-Mining-Project
-   ```
-2. **Start the App**:
-   ```
-   bash start.sh
-   ```
-
+## Authors
+- [Sonia Bors](https://github.com/SoniaBorsi)
+- [Filippo Costamagna](https://github.com/pippotek)
+- [Joaquin Lopez Calvo](https://github.com/JoaquinLCalvo)
