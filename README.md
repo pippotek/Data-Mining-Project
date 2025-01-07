@@ -119,7 +119,8 @@ The repository is organized as follows:
 > Make sure your `Docker` memory allocation is set to a minimum of **6GB** to ensure all containers run smoothly without performance issues.
 
 
-----> Disclaimer: This project has been tested on Ubuntu and macOS. Compatibility with Windows has not been verified.
+`Disclaimer`: This project has been tested on Ubuntu and macOS. Compatibility with Windows has not been verified.
+
 ---
 
 ## Algorithms
