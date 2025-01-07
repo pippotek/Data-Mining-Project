@@ -1,6 +1,6 @@
 # Dual News Recommendation System Using MIND Dataset
 
-This project implements and compares two personalized news recommendation systems based on the **Microsoft News Dataset (MIND)**. The two approaches used are:
+This project implements and compares two personalized news recommendation systems based on the [**Microsoft News Dataset (MIND)**](https://learn.microsoft.com/en-us/azure/open-datasets/dataset-microsoft-news?tabs=azureml-opendatasets). The two approaches used are:
 
 1. **Collaborative Filtering (ALS)** - Implemented using the Alternating Least Squares algorithm in Apache Spark.
 2. **Content-Based Filtering (FAISS)** - Utilizes BERT embeddings and FAISS for efficient vector similarity search.
