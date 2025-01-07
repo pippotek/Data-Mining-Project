@@ -108,7 +108,9 @@ The repository is organized as follows:
    ```
    bash start.sh
    ```
-   
+
+> [!TIP]
+> Make sure your `Docker` memory allocation is set to a minimum of **6GB** to ensure all containers run smoothly without performance issues.
 
 ---
 
