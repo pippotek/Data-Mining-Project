@@ -133,8 +133,9 @@ Collaborative Filtering uses the **Alternating Least Squares (ALS)** algorithm i
 
 - **Workflow**:
   1. Preprocess the user-item interaction matrix using implicit feedback (clicks).
-  2. Train the ALS model on the interaction matrix to identify latent factors for users and articles.
-  3. Generate recommendations for users by predicting their preferences for unseen articles.
+  2. Hyperparameter Tuning to find the optimal number of latent factors, regularization parameter and number of iterations.
+  3. Train the ALS model on the interaction matrix to identify latent factors for users and articles.
+  4. Generate recommendations for users by predicting their preferences for unseen articles.
 
 ---
 
