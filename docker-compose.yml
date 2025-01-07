@@ -1,0 +1,125 @@
+version: "3.8"
+
+services:
+  als:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: als  # Specify the service for the build
+    container_name: spark-als
+    ports:
+      - "8888:8888"  # Expose Jupyter notebook for this container
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    depends_on:
+      - mongodb
+      - data-fetch
+    volumes:
+      - ./saved_models:/app/saved_models
+
+  data-fetch:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: fetching  # Specify the service for the build
+    container_name: spark-data-fetch
+    ports:
+      - "8889:8888"  # Expose Jupyter notebook for this container
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    depends_on:
+      - mongodb
+     
+
+  cbrs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: cbrs
+    container_name: spark-cbrs
+    ports:
+      - "8890:8888"
+      - "4040:4040"
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017
+    volumes:
+      - spark-dependencies:/opt/spark/jars
+      - ivy-cache:/root/.ivy2
+    depends_on:
+      - mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+
+  clustering:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Consolidated Dockerfile
+      args:
+        SERVICE: clustering  # Specify the service for the build
+    container_name: spark-clustering
+    ports:
+      - "8890:8888"  # Expose Jupyter notebook for this container
+    environment:
+      - SPARK_VERSION=3.3.2
+      - HADOOP_VERSION=3
+      - JAVA_HOME=/usr/local/openjdk-11
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - MONGO_URI=mongodb://mongodb:27017  # MongoDB connection string
+    volumes:
+      - spark-dependencies:/opt/spark/jars  # Volume to retain JAR dependencies
+      - ivy-cache:/root/.ivy2
+      - ./src/outputs:/app/src/outputs   
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"  # Expose MongoDB default port
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_data:/data/db  # Mount the volume for data persistence
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    depends_on:
+      - mongodb
+    ports:
+      - "8081:8081"  # Expose Mongo Express web UI
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongodb  # Correct service name
+
+volumes:
+  mongo_data:
+    driver: local
+  spark-dependencies:
+    driver: local  # Define the volume for Spark JAR dependencies
+  ivy-cache:  # Explicitly define the Ivy cache volume
+    driver: local

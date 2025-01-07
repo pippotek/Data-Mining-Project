@@ -1,0 +1,8 @@
+pymongo
+pyspark==3.3.0
+spark-nlp==5.5.1
+requests
+PyYAML
+pandera==0.19.3
+numpy<2.0
+recommenders
