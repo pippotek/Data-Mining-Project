@@ -1,12 +1,9 @@
 import wandb
 from src.algorithms.als.als_utils import create_als_model, save_model, make_predictions
 from src.training.evaluation_metrics import compute_regression_metrics
-from src.utilities.logger import get_logger
 from src.configs.setup import load_config
 from pyspark.sql.functions import collect_list 
-
-
-logger = get_logger(name="ALS_Training", log_file="logs/train_als.log")
+import logging
 
 config = load_config('src/configs/config.yaml')
 
@@ -20,7 +17,7 @@ def train_als_model(training_data, validation_data, model_save_path):
 
     )
 
-    logger.info("Starting ALS model training...")
+    logging.info("Starting ALS model training...")
     als = create_als_model()
     
     for iteration in range(config['ALS_CONFIG']["max_iter"]):
@@ -33,7 +30,7 @@ def train_als_model(training_data, validation_data, model_save_path):
         regression_metrics = compute_regression_metrics(predictions)
         rmse = regression_metrics["RMSE"]
         
-        logger.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
+        logging.info(f"Training ALS model - Iteration {iteration + 1}/{config['ALS_CONFIG']['max_iter']}")
         
 
         wandb.log({
@@ -52,15 +49,15 @@ def train_als_model(training_data, validation_data, model_save_path):
         "Final RMSE": rmse,
         })
     
-    logger.info(f"Final RMSE: {rmse}")
+    logging.info(f"Final RMSE: {rmse}")
 
 
-    logger.info("Saving the trained ALS model...")
+    logging.info("Saving the trained ALS model...")
     save_model(model, config['ALS_CONFIG']["model_save_path"])
     
-    logger.info(f"ALS model saved successfully to {model_save_path}.")
+    logging.info(f"ALS model saved successfully to {model_save_path}.")
     wandb.finish()
-    logger.info("Training process completed and WandB session closed.")
+    logging.info("Training process completed and WandB session closed.")
     return model
 
 def get_top_predictions(model, data, top_n=10):
@@ -75,7 +72,7 @@ def get_top_predictions(model, data, top_n=10):
     Returns:
         A DataFrame containing the top N predictions for each user.
     """
-    logger.info("Generating top predictions...")
+    logging.info("Generating top predictions...")
     predictions = make_predictions(model, data)
     
     # Assuming predictions DataFrame has 'userId', 'itemId', and 'prediction' columns
@@ -92,5 +89,5 @@ def get_top_predictions(model, data, top_n=10):
         top_predictions['top_scores'][0:top_n].alias('top_scores')
     )
 
-    logger.info("Top predictions generated successfully.")
+    logging.info("Top predictions generated successfully.")
     return top_predictions
