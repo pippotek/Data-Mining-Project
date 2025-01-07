@@ -1,7 +1,6 @@
 from src.algorithms.cbrs.cbrs_utils_pandas import * 
 from src.utilities.data_utils import wait_for_data
 from src.algorithms.cbrs.clean_embed import main_embedding, init_spark_session
-from cbrs_utils_pandas import *
 import logging
 
 

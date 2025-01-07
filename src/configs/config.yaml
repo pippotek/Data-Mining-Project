@@ -31,7 +31,7 @@ EVAL_CONFIG : {
 
 services: 
   als:
-    enabled : false
+    enabled : true
   cbrs:
     enabled : true
   clustering:

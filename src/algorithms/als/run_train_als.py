@@ -1,13 +1,12 @@
 from pyspark.sql import SparkSession
 from src.algorithms.als.train_als import train_als_model
-from src.utilities.logger import get_logger
 from src.utilities.data_utils import  preprocess_behaviors_mind, fetch_data_from_mongo, wait_for_data, write_to_mongodb
 from pyspark.sql.functions import col, explode
 from src.configs.setup import load_config
+import logging
 
 
 
-logger = get_logger(name="ALS_Run_Train", log_file="logs/run_train_als.log")
 
 if __name__ == "__main__":
 
@@ -37,7 +36,7 @@ if __name__ == "__main__":
         .getOrCreate()
         )
 
-        logger.info("Starting data loading...")
+        logging.info("Starting data loading...")
         
         try:
             
@@ -54,12 +53,12 @@ if __name__ == "__main__":
                 training_data, validation_data = preprocess_behaviors_mind(spark, train_behaviors_df, valid_behaviors_df, npratio=4)
 
             else:
-                logger.error(f"Unsupported data source: {data_source}")
+                logging.error(f"Unsupported data source: {data_source}")
                 raise ValueError(f"Unsupported data source: {data_source}")
 
             # Train the ALS model using the preprocessed training/validation data
             model_save_path = config['ALS_CONFIG']["model_save_path"]
-            logger.info(f"Starting ALS training with data source: {data_source}")
+            logging.info(f"Starting ALS training with data source: {data_source}")
             model = train_als_model(training_data, validation_data, model_save_path)
             reccomendations = model.recommendForAllUsers(numItems= 10)
             # Explode the 'recommendations' column
@@ -75,11 +74,11 @@ if __name__ == "__main__":
                 col("recommendation.rating").alias("rating"))
             write_to_mongodb(reccomendations, MONGO_URI=MONGO_URI, DATABASE_NAME='mind_news', COLLECTION_NAME='reccomendations_als')
         except Exception as e:
-            logger.error(f"An error occurred during training: {e}")
+            logging.error(f"An error occurred during training: {e}")
         finally:
             try:
                 spark.stop()
-                logger.info("Spark session stopped.")
+                logging.info("Spark session stopped.")
             except Exception as e:
                 print(f"Error stopping SparkSession: {e}")
 

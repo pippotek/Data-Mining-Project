@@ -2,11 +2,10 @@ from pyspark.sql import SparkSession, DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.functions import col, explode, split, when, lit, rand
 from pyspark.sql.window import Window
-from src.utilities.logger import get_logger
 from pymongo import MongoClient
 import time
+import logging
 
-logger = get_logger("DataUtils", log_file="logs/data_utils.log")
 
 
 def fetch_data_from_mongo(spark: SparkSession, uri: str, db_name: str, collection_name: str):
@@ -43,7 +42,7 @@ def preprocess_behaviors_mind(
     valid_df: DataFrame,
     npratio: int = 4
 ):
-    logger.info(f"Starting to preprocess MIND dataset.")
+    logging.info(f"Starting to preprocess MIND dataset.")
     
     def process_behaviors(df):
         # Debugging: Print schema
@@ -93,7 +92,7 @@ def preprocess_behaviors_mind(
     train_df = process_behaviors(train_df)
     valid_df = process_behaviors(valid_df)  # Corrected to process valid_df
     
-    logger.info("Preprocessing of MIND dataset completed.")
+    logging.info("Preprocessing of MIND dataset completed.")
     return train_df, valid_df
 
 
