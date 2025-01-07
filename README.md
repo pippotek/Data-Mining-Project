@@ -10,9 +10,10 @@ The project explores key challenges such as scalability, implicit feedback handl
 ## Table of Contents
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
-- [Content-Based Filtering](#Content-Based-Filtering)
 - [Clustering](#Clustering)
-- [Collaborative Filtering](#Collaborative-Filtering)
+- [Algorithms](#algorithms)
+  - [Collaborative Filtering](#collaborative-filtering)
+  - [Content-Based Filtering](#content-based-filtering)
 - [Setup Instructions](#setup-instructions)
 - [Results](#results)
 - [Acknowledgements](#acknowledgements)
@@ -95,26 +96,7 @@ The repository is organized as follows:
 - `outputs/`: Contains visualizations and analysis outputs (e.g., cluster visualizations).
 - `requirements/`: Separate requirements files for different modules (ALS, FAISS, etc.).
 
-## Content-Based Filtering
 
-The **Content-Based Filtering (CBR)** model uses article embeddings to recommend news based on similarity to previously clicked articles. Key highlights:
-
-- **Text Processing**: News articles are represented using BERT embeddings that capture their semantic meaning.
-- **Vector Similarity Search**: FAISS (Facebook AI Similarity Search) is employed to compute approximate nearest neighbors efficiently in the embedding space.
-- **Cold-Start Problem Handling**: Unlike collaborative filtering, CBR does not require user-item interaction history, making it well-suited for new users or articles.
-
-Steps:
-1. **Embedding Generation**: News articles are converted into vector embeddings using a pretrained BERT model.
-2. **FAISS Indexing**: The embeddings are indexed with FAISS for efficient similarity search.
-3. **Recommendation Generation**: Articles similar to a user’s reading history are retrieved based on cosine similarity.
-
-Advantages:
-- Handles cold-start scenarios effectively.
-- Highly interpretable and adaptable for dynamic datasets like news.
-
-Limitations:
-- Requires high-quality embeddings to perform well.
-- Content-based recommendations may lack diversity.
 
 ---
 
@@ -128,33 +110,28 @@ To validate the embeddings generated for content-based filtering, **K-means clus
   - PCA (Principal Component Analysis) was used to reduce the dimensionality of embeddings for visualization.
   - A heatmap was generated to show the distribution of categories within each cluster.
 
-### Observations
-- Clusters effectively captured the semantic structure of the dataset, with "news" and "sports" forming distinct groups.
-- Minor categories were grouped into the third cluster, aligning with expectations from the EDA.
-  
+---
+## Algorithms
+
+### Collaborative Filtering
+
+Collaborative Filtering uses the **Alternating Least Squares (ALS)** algorithm implemented with Apache Spark for scalability.
+
+- **Workflow**:
+  1. Preprocess the user-item interaction matrix using implicit feedback (clicks).
+  2. Train the ALS model on the interaction matrix to identify latent factors for users and articles.
+  3. Generate recommendations for users by predicting their preferences for unseen articles.
+
 ---
 
-## Collaborative Filtering
+### Content-Based Filtering
 
-The **Collaborative Filtering (ALS)** model uses matrix factorization to recommend news based on user-item interaction data. Key highlights:
+Content-Based Filtering leverages **BERT embeddings** to represent news articles and **FAISS** for approximate nearest neighbor search.
 
-- **ALS Algorithm**: The Alternating Least Squares (ALS) algorithm is implemented using Apache Spark, leveraging its distributed computing capabilities.
-- **Latent Factors**: The model learns latent factors for both users and articles, capturing hidden relationships in the interaction matrix.
-- **Interaction Matrix**: Implicit feedback (e.g., clicks) is used to construct a user-item matrix.
-
-Steps:
-1. **Data Preprocessing**: The user-item interaction matrix is constructed using implicit feedback from the MIND dataset.
-2. **Model Training**: The ALS algorithm trains on the interaction matrix, minimizing reconstruction error.
-3. **Recommendations**: The trained model predicts user preferences for articles not yet interacted with.
-
-Advantages:
-- Highly accurate for dense interaction matrices.
-- Scales well to large datasets with Spark.
-
-Limitations:
-- Struggles with cold-start problems for new users or articles.
-- Requires significant computational resources for matrix factorization.
-
+- **Workflow**:
+  1. Generate embeddings for news articles using a pretrained BERT model.
+  2. Index embeddings with FAISS for efficient similarity search.
+  3. Retrieve similar articles based on a user’s reading history using cosine similarity.
 
 ---
 
