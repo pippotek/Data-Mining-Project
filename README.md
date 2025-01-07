@@ -104,14 +104,13 @@ The repository is organized as follows:
    git clone https://github.com/pippotek/Data-Mining-Project.git
    cd Data-Mining-Project
    ```
-2. Install Docker:
-   Follow the installation guidelines at the [Docker official website](https://www.docker.com)
+2. Install Docker: follow the installation guidelines at the [Docker official website](https://www.docker.com)
 3. Run:
-  ### For macOS
+   For macOS
   ```bash
   brew install yq
   ```
-  ### For Ubuntu
+  For Ubuntu
   ```bash
   sudo apt install yq
   ```
