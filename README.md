@@ -110,7 +110,7 @@ The repository is organized as follows:
     pip install requirements.txt
    ```
 
-3. **Modify Configuration**: Update the `config.yaml` file to set your preferred options and hyperparameters for the ALS model.
+3. **Modify Configuration**: Update the `config.yaml` file to set your preferred options and hyperparameters for the ALS model and add your wandb API key.
    
 5. **Start the App**:
    ```
