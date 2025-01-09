@@ -88,9 +88,12 @@ The repository is organized as follows:
 │       └── data_utils.py
 └── start.sh
 ```
+
 <p align="center">
   <img src="https://github.com/pippotek/Dual-Recommendation-System/blob/fc9c58ebede95e77761a1fe338a36aad4faa8d4a/outputs/architecture.jpeg" width="512"/>  
 </p>
+
+
 ---
 ### Key Directories
 - `src/`: Core codebase including algorithms, data management, and utilities.
